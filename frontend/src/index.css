@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Custom base styles ─── */
+@layer base {
+  body {
+    @apply min-h-screen bg-gradient-to-br from-slate-50 to-blue-50;
+  }
+}

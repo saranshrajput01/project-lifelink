@@ -1,0 +1,61 @@
+# ─── Project LIFELINK .gitignore ───
+
+# ─── Python ─────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+.venv/
+env/
+
+# ─── Node.js ────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Environment & Secrets ──────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ─── IDEs ───────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ─── Docker ─────────────────────
+docker-compose.override.yml
+
+# ─── Testing ────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ─── Build Outputs ──────────────
+frontend/dist/
+*.log
+
+# ─── ML Models (large files) ────
+*.pkl
+*.joblib
+*.onnx
+*.h5
+*.pt
+ml-notebooks/.ipynb_checkpoints/
+
+# ─── Data files ─────────────────
+*.csv
+*.parquet
+data/
+!scripts/init-db.sql
