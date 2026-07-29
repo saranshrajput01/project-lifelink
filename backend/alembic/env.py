@@ -14,6 +14,13 @@ from app.core.database import Base
 
 # Import all models so Alembic can detect them
 from app.models.user import User  # noqa: F401
+from app.models.profile import UserProfile  # noqa: F401
+from app.models.document import MedicalDocument  # noqa: F401
+from app.models.health_event import HealthEvent  # noqa: F401
+from app.models.health_metric import HealthMetric  # noqa: F401
+from app.models.risk_assessment import RiskAssessment  # noqa: F401
+from app.models.chat import ChatSession, ChatMessage  # noqa: F401
+from app.models.embedding import DocumentEmbedding  # noqa: F401
 
 settings = get_settings()
 config = context.config
