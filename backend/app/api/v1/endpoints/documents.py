@@ -12,7 +12,8 @@ from app.core.database import get_db
 from app.core.dependencies import get_current_user_id
 from app.models.document import MedicalDocument
 from app.schemas.document import DocumentListResponse, DocumentResponse, UploadResponse
-from app.services.storage import ensure_bucket_exists, generate_s3_key, upload_file_to_s3
+from app.services.storage import ensure_bucket_exists, generate_s3_key, get_download_url, upload_file_to_s3
+from app.services.ai_processing import process_document
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -82,6 +83,30 @@ async def upload_document(
     await db.refresh(document)
 
     # TODO: Phase 2 — Trigger background Celery task for OCR + AI processing
+    # For now, process inline (works for small files)
+    try:
+        ai_result = await process_document(content)
+        document.raw_text = ai_result.get("raw_text")
+        document.extracted_data = ai_result.get("extracted_data")
+        document.summary_short = ai_result.get("summary_short")
+        document.summary_detailed = ai_result.get("summary_detailed")
+        document.doctor_name = ai_result.get("doctor_name")
+        document.hospital_name = ai_result.get("hospital_name")
+        document.ai_confidence = ai_result.get("ai_confidence")
+        document.ocr_status = "completed"
+        document.processing_status = "completed"
+
+        # Parse document date if available
+        doc_date = ai_result.get("document_date")
+        if doc_date:
+            try:
+                from datetime import datetime as dt
+                document.document_date = dt.strptime(doc_date, "%Y-%m-%d")
+            except (ValueError, TypeError):
+                pass
+    except Exception:
+        document.ocr_status = "pending"
+        document.processing_status = "pending"
 
     return UploadResponse(
         id=document.id,
@@ -172,3 +197,28 @@ async def delete_document(
         )
 
     await db.delete(document)
+
+
+@router.get("/{document_id}/download")
+async def download_document(
+    document_id: UUID,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get a pre-signed download URL for the document."""
+    result = await db.execute(
+        select(MedicalDocument).where(
+            MedicalDocument.id == document_id,
+            MedicalDocument.patient_id == UUID(user_id),
+        )
+    )
+    document = result.scalar_one_or_none()
+
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found.",
+        )
+
+    url = get_download_url(document.s3_key)
+    return {"download_url": url, "filename": document.original_filename}

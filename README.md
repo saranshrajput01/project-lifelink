@@ -97,18 +97,20 @@ project-lifelink/
 
 ---
 
-## 📊 Key Features (Planned)
+## 📊 Key Features
 
 | Module | Status |
 |--------|--------|
-| User Authentication (JWT + RBAC) | 🟡 In Progress |
-| Medical Record Upload & Storage | ⬜ Planned |
-| AI Document Processing (OCR + NLP) | ⬜ Planned |
-| Health Timeline Generation | ⬜ Planned |
+| User Authentication (JWT + RBAC) | ✅ Complete |
+| Medical Record Upload & Storage | ✅ Complete |
+| AI Document Processing (OCR + NLP) | 🟡 Built (API key needed) |
+| Health Timeline Generation | ✅ Complete |
+| Dashboard & Analytics | ✅ Complete |
+| User Profile Management | ✅ Complete |
+| Admin Panel | ✅ Complete |
+| CI/CD (GitHub Actions) | ✅ Complete |
 | Predictive Analytics (ML Models) | ⬜ Planned |
 | AI Healthcare Assistant (RAG) | ⬜ Planned |
-| Dashboard & Analytics | ⬜ Planned |
-| Admin Panel | ⬜ Planned |
 
 ---
 

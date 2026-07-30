@@ -1,13 +1,36 @@
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { DocumentUpload } from '@/components/DocumentUpload'
+import { api } from '@/services/api'
 
 export function DashboardPage() {
   const navigate = useNavigate()
+  const [stats, setStats] = useState({ documents: 0, processed: 0, userName: '' })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [docsRes, meRes] = await Promise.all([
+          api.get('/documents/?page_size=1'),
+          api.get('/auth/me'),
+        ])
+        setStats({
+          documents: docsRes.data.total || 0,
+          processed: docsRes.data.documents.filter((d: any) => d.processing_status === 'completed').length,
+          userName: meRes.data.full_name || '',
+        })
+      } catch {
+        // silently fail
+      }
+    }
+    fetchStats()
+  }, [])
 
   const handleLogout = () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
-    navigate('/login')
+    navigate('/')
   }
 
   return (
@@ -26,14 +49,34 @@ export function DashboardPage() {
           </div>
           <span className="text-xl font-black bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">LIFELINK</span>
         </div>
-        <motion.button
-          onClick={handleLogout}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="px-4 py-2 text-gray-400 hover:text-red-400 font-medium transition-colors border border-white/5 rounded-xl hover:border-red-500/20 hover:bg-red-500/5"
-        >
-          Logout
-        </motion.button>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/timeline"
+            className="px-4 py-2 text-gray-400 hover:text-white font-medium transition-colors border border-white/5 rounded-xl hover:border-white/20 hover:bg-white/5"
+          >
+            Timeline
+          </Link>
+          <Link
+            to="/profile"
+            className="px-4 py-2 text-gray-400 hover:text-white font-medium transition-colors border border-white/5 rounded-xl hover:border-white/20 hover:bg-white/5"
+          >
+            Profile
+          </Link>
+          <Link
+            to="/"
+            className="px-4 py-2 text-gray-400 hover:text-white font-medium transition-colors border border-white/5 rounded-xl hover:border-white/20 hover:bg-white/5"
+          >
+            Home
+          </Link>
+          <motion.button
+            onClick={handleLogout}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-4 py-2 text-gray-400 hover:text-red-400 font-medium transition-colors border border-white/5 rounded-xl hover:border-red-500/20 hover:bg-red-500/5"
+          >
+            Logout
+          </motion.button>
+        </div>
       </nav>
 
       {/* Content */}
@@ -43,16 +86,18 @@ export function DashboardPage() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-black text-white mb-1">Welcome to LIFELINK</h1>
+          <h1 className="text-3xl font-black text-white mb-1">
+            {stats.userName ? `Welcome, ${stats.userName.split(' ')[0]}` : 'Welcome to LIFELINK'}
+          </h1>
           <p className="text-gray-400 mb-10">Your AI-powered health intelligence dashboard</p>
         </motion.div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-10">
           <StatCard title="Health Score" value="—" subtitle="Upload records to calculate" color="blue" icon="💙" delay={0.1} />
-          <StatCard title="Documents" value="0" subtitle="Medical records uploaded" color="emerald" icon="📄" delay={0.2} />
-          <StatCard title="Risk Alerts" value="0" subtitle="No alerts yet" color="yellow" icon="⚠️" delay={0.3} />
-          <StatCard title="AI Insights" value="—" subtitle="Available after upload" color="purple" icon="🧠" delay={0.4} />
+          <StatCard title="Documents" value={String(stats.documents)} subtitle="Medical records uploaded" color="emerald" icon="📄" delay={0.2} />
+          <StatCard title="Processed" value={String(stats.processed)} subtitle="AI analyzed" color="yellow" icon="🧠" delay={0.3} />
+          <StatCard title="AI Insights" value="—" subtitle="Available after processing" color="purple" icon="✨" delay={0.4} />
         </div>
 
         {/* Action Cards */}
@@ -61,24 +106,13 @@ export function DashboardPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
-            whileHover={{ y: -3, borderColor: 'rgba(59,130,246,0.3)' }}
-            className="p-6 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] rounded-2xl transition-all"
+            className="p-6 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] rounded-2xl"
           >
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-4">
               <span className="text-2xl">📄</span>
               <h3 className="text-lg font-bold text-white">Upload Medical Records</h3>
             </div>
-            <p className="text-gray-400 text-sm mb-5 leading-relaxed">
-              Upload prescriptions, lab reports, or discharge summaries.
-              AI will automatically extract and organize the information.
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-blue-500/20 transition-all"
-            >
-              Upload Document
-            </motion.button>
+            <DocumentUpload />
           </motion.div>
 
           <motion.div
@@ -106,7 +140,7 @@ export function DashboardPage() {
           </motion.div>
         </div>
 
-        {/* Timeline placeholder */}
+        {/* Timeline link */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -115,10 +149,15 @@ export function DashboardPage() {
         >
           <span className="text-4xl mb-4 block">📈</span>
           <h3 className="text-lg font-bold text-white mb-2">Health Timeline</h3>
-          <p className="text-gray-500 text-sm max-w-md mx-auto">
-            Upload your first medical document to start building your AI-powered health timeline.
-            Every report, prescription, and lab test will be tracked here.
+          <p className="text-gray-500 text-sm max-w-md mx-auto mb-5">
+            View all your medical records in chronological order — prescriptions, lab reports, and more.
           </p>
+          <Link
+            to="/timeline"
+            className="inline-block px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all"
+          >
+            View Timeline →
+          </Link>
         </motion.div>
       </main>
     </div>

@@ -24,7 +24,8 @@
   }
 }
 
-/* Smooth scroll */
-html {
+/* Smooth scroll & full height */
+html, body, #root {
+  height: 100%;
   scroll-behavior: smooth;
 }

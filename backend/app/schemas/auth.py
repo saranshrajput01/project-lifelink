@@ -30,3 +30,15 @@ class TokenResponse(BaseModel):
 class TokenRefreshRequest(BaseModel):
     """Request body for token refresh."""
     refresh_token: str
+
+
+class UserResponse(BaseModel):
+    """Response with current user info."""
+    id: str
+    email: str
+    full_name: str
+    role: str
+    is_active: bool
+    is_verified: bool
+
+    model_config = {"from_attributes": True}
