@@ -48,13 +48,48 @@ class Settings(BaseSettings):
     S3_REGION: str = "us-east-1"
 
     # ─── AI / LLM ─────────────────────────────────────────
+    # Groq is the active provider (ported from bizmind-ai).
+    # OpenAI/Gemini kept only as legacy/optional fallback config.
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    LLM_MODEL: str = "gemini-1.5-flash"  # Default model for cost efficiency
+
+    # Groq — up to 7 keys with automatic rotation on rate limit (429)
+    GROQ_API_KEY: str = ""
+    GROQ_API_KEY_2: str = ""
+    GROQ_API_KEY_3: str = ""
+    GROQ_API_KEY_4: str = ""
+    GROQ_API_KEY_5: str = ""
+    GROQ_API_KEY_6: str = ""
+    GROQ_API_KEY_7: str = ""
+    GROQ_MODEL: str = "qwen/qwen3.8-27b"
+    GROQ_MODEL_STRONG: str = "qwen/qwen3.8-27b"
+
+    LLM_MODEL: str = "qwen/qwen3.8-27b"  # Active model (Groq)
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
+
+    @property
+    def groq_api_keys(self) -> list[str]:
+        """Return all configured Groq API keys (non-empty)."""
+        keys = [
+            self.GROQ_API_KEY, self.GROQ_API_KEY_2, self.GROQ_API_KEY_3,
+            self.GROQ_API_KEY_4, self.GROQ_API_KEY_5, self.GROQ_API_KEY_6,
+            self.GROQ_API_KEY_7,
+        ]
+        return [k for k in keys if k]
 
     # ─── OCR ───────────────────────────────────────────────
     OCR_ENGINE: str = "paddleocr"  # paddleocr | tesseract
+
+    # ─── Email (SMTP) ─────────────────────────────────────
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASS: str = ""
+    SMTP_FROM: str = "Project LIFELINK <noreply@lifelink.com>"
+
+    @property
+    def email_enabled(self) -> bool:
+        return bool(self.SMTP_HOST and self.SMTP_USER and self.SMTP_PASS)
 
     # ─── Celery (Background Tasks) ────────────────────────
     CELERY_BROKER_URL: str = "redis://localhost:6379/1"

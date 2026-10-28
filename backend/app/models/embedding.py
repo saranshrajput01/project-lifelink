@@ -9,11 +9,12 @@ from datetime import datetime, timezone
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
+from pgvector.sqlalchemy import Vector
 
 from app.core.database import Base
 
-# Note: pgvector column type will be added after pgvector SQLAlchemy extension is imported
-# For now, we store embedding as a reference — actual vector column added in migration
+# MiniLM (all-MiniLM-L6-v2) produces 384-dimensional embeddings.
+EMBEDDING_DIM = 384
 
 
 class DocumentEmbedding(Base):
@@ -33,7 +34,7 @@ class DocumentEmbedding(Base):
     # Chunk info
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)  # Order in document
     chunk_text: Mapped[str] = mapped_column(Text, nullable=False)  # The actual text chunk
-    # embedding: vector(768) — added via raw SQL in migration (pgvector type)
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM), nullable=True)
     # Metadata
     page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
     section_title: Mapped[str | None] = mapped_column(String(500), nullable=True)

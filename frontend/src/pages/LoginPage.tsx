@@ -19,7 +19,16 @@ export function LoginPage() {
       const response = await api.post('/auth/login', { email, password })
       localStorage.setItem('access_token', response.data.access_token)
       localStorage.setItem('refresh_token', response.data.refresh_token)
-      navigate('/dashboard')
+      // Fetch user role and redirect accordingly
+      const meRes = await api.get('/auth/me', {
+        headers: { Authorization: `Bearer ${response.data.access_token}` }
+      })
+      const role = meRes.data.role || 'patient'
+      localStorage.setItem('user_role', role)
+      localStorage.setItem('user_name', meRes.data.full_name || '')
+      if (role === 'admin') navigate('/admin')
+      else if (role === 'doctor') navigate('/doctor')
+      else navigate('/dashboard')
     } catch (err: unknown) {
       const error = err as { response?: { data?: { detail?: string } } }
       setError(error.response?.data?.detail || 'Login failed')

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { api } from '@/services/api'
 
@@ -9,6 +9,8 @@ interface Document {
   file_size_bytes: number
   uploaded_at: string
   ocr_status: string
+  processing_status: string
+  mime_type?: string
 }
 
 export function DocumentUpload() {
@@ -29,7 +31,7 @@ export function DocumentUpload() {
   }
 
   // Fetch on mount
-  useState(() => { fetchDocuments() })
+  useEffect(() => { fetchDocuments() }, [])
 
   const handleUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -71,6 +73,17 @@ export function DocumentUpload() {
       setMessage({ type: 'success', text: 'Document deleted' })
     } catch {
       setMessage({ type: 'error', text: 'Failed to delete' })
+    }
+  }
+
+  const handleReprocess = async (docId: string) => {
+    setMessage({ type: 'success', text: 'Reprocessing… this may take a few seconds.' })
+    try {
+      await api.post(`/documents/${docId}/reprocess`)
+      setMessage({ type: 'success', text: 'Reprocessed successfully!' })
+      fetchDocuments()
+    } catch {
+      setMessage({ type: 'error', text: 'Reprocess failed — the file may be unreadable.' })
     }
   }
 
@@ -162,11 +175,26 @@ export function DocumentUpload() {
                 <div className="min-w-0">
                   <p className="text-white text-sm font-medium truncate">{doc.original_filename}</p>
                   <p className="text-gray-500 text-xs">
-                    {doc.doc_type.replace('_', ' ')} • {formatSize(doc.file_size_bytes)} • {doc.ocr_status}
+                    {doc.doc_type.replace('_', ' ')} • {formatSize(doc.file_size_bytes)} •{' '}
+                    <span className={
+                      doc.processing_status === 'completed' ? 'text-green-400'
+                      : doc.processing_status === 'failed' ? 'text-red-400'
+                      : 'text-yellow-400'
+                    }>
+                      {doc.processing_status}
+                    </span>
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                {doc.processing_status !== 'completed' && (
+                  <button
+                    onClick={() => handleReprocess(doc.id)}
+                    className="px-3 py-1.5 text-xs text-yellow-400 border border-yellow-500/20 rounded-lg hover:bg-yellow-500/10 transition-all"
+                  >
+                    Reprocess
+                  </button>
+                )}
                 <button
                   onClick={() => handleDownload(doc.id)}
                   className="px-3 py-1.5 text-xs text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/10 transition-all"

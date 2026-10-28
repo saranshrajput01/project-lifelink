@@ -48,14 +48,33 @@ frontend/dist/
 
 # ─── ML Models (large files) ────
 *.pkl
-*.joblib
 *.onnx
 *.h5
 *.pt
 ml-notebooks/.ipynb_checkpoints/
+# Keep the trained risk models in the repo (small, needed for the demo to run on clone)
+!backend/app/ml/models_store/*.joblib
 
 # ─── Data files ─────────────────
-*.csv
 *.parquet
 data/
 !scripts/init-db.sql
+# Keep the real training datasets in the repo (demo: proves models trained on real data)
+!backend/app/ml/datasets/*.csv
+!backend/app/ml/datasets/*.data
+!backend/app/ml/datasets/*.arff
+
+# ─── Large wheel cache (never commit — 400MB+, rebuilt by Docker) ───
+backend/wheels/
+
+# ─── Terraform ──────────────────
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/terraform.tfstate
+infra/terraform.tfstate.*
+infra/terraform.tfvars
+infra/*.tfplan
+
+# ─── Archives ───────────────────
+*.rar
+*.zip

@@ -26,14 +26,43 @@ celery==5.4.0
 boto3==1.35.19
 
 # AI & ML (Phase 2+)
+groq==0.9.0
 openai==1.51.0
 PyMuPDF==1.24.10
 # langchain==0.3.0
 # langchain-openai==0.2.0
-# sentence-transformers==3.1.0
-# paddleocr==2.8.0
+# torch is installed CPU-only from https://download.pytorch.org/whl/cpu (--no-deps)
+# in the Dockerfile, BEFORE this file is processed. It is intentionally NOT listed
+# here: listing it (or anything that depends on it, like sentence-transformers)
+# makes pip re-resolve torch and drag in ~2GB of nvidia CUDA GPU wheels we don't
+# need for a CPU deployment. The default PyPI torch wheel also crashes at import on
+# a CPU host ("libcublasLt.so not found"); the +cpu wheel avoids that.
+# sentence-transformers is likewise installed --no-deps in the Dockerfile; its real
+# runtime deps are provided explicitly here so nothing re-pulls torch/CUDA.
+filelock
+typing-extensions>=4.10.0
+sympy>=1.13.3
+networkx
+jinja2
+fsspec
+transformers>=4.38.0,<5.0.0
+huggingface-hub>=0.23.0
+tokenizers>=0.15.0
+safetensors>=0.4.0
+tqdm>=4.66.0
+scikit-learn==1.5.2
+scipy>=1.11.0
+regex
+# sentence-transformers itself is installed --no-deps in the Dockerfile
+paddleocr==2.8.1
+paddlepaddle==2.6.2
+Pillow==10.4.0
+numpy==1.26.4
 # xgboost==2.1.1
 # scikit-learn==1.5.2
+
+# Reports / PDF export
+reportlab==4.2.2
 
 # Utilities
 httpx==0.27.2

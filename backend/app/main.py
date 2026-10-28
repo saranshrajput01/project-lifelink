@@ -26,8 +26,12 @@ async def lifespan(app: FastAPI):
     print(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION} starting...")
     print(f"   Environment: {settings.ENVIRONMENT}")
     print(f"   Debug: {settings.DEBUG}")
+    from app.services.scheduler import start_scheduler, stop_scheduler
+    start_scheduler()
+    print("   ⏰ Reminder notification scheduler started")
     yield
     # ─── Shutdown ───
+    stop_scheduler()
     print(f"👋 {settings.APP_NAME} shutting down...")
 
 

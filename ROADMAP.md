@@ -1,6 +1,6 @@
 # 🗺️ Project LIFELINK — Roadmap
 
-**Last Updated:** 30 July 2026
+**Last Updated:** 28 October 2026
 
 ---
 
@@ -13,7 +13,7 @@
 | Docker Compose | Full local dev environment (Postgres, Redis, MinIO) | ✅ Done |
 | User Authentication | JWT (access + refresh tokens), bcrypt password hashing | ✅ Done |
 | Role-Based Access Control | `require_role()` dependency, admin/doctor/patient roles | ✅ Done |
-| Protected Routes | Frontend ProtectedRoute component, redirect to login | ✅ Done |
+| Protected Routes | Frontend ProtectedRoute + RoleRoute component | ✅ Done |
 
 ---
 
@@ -32,28 +32,64 @@
 
 ---
 
+## ✅ Phase 2.5 — Role-Based UI (Completed — 16 Sep 2026)
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Role-Based Login Redirect | Patient → /dashboard, Doctor → /doctor, Admin → /admin | ✅ Done |
+| Doctor Portal | Separate dashboard with patient list, stats, quick actions | ✅ Done |
+| RoleRoute Guard | Wrong role on any URL → auto redirect to correct dashboard | ✅ Done |
+| Admin Logout | Logout button added to Admin Panel with role/token clear | ✅ Done |
+| Role stored in localStorage | `user_role` + `user_name` saved after login | ✅ Done |
+| Demo Accounts Created | admin@lifelink.com, doctor@lifelink.com (password: password123) | ✅ Done |
+
+---
+
 ## 🟡 Phase 3 — AI Intelligence (In Progress)
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| AI Document Processing | GPT-4o-mini extracts medications, diagnosis, summaries | 🟡 Built (needs API key) |
-| OCR Pipeline | PyMuPDF text extraction, PaddleOCR for images | 🟡 Partial |
-| AI Healthcare Assistant | RAG chatbot using LangChain + pgvector | ⬜ Planned |
-| Smart Summarization | Auto-generate 1-line + detailed summaries | 🟡 Built (needs API key) |
+| AI Document Processing | GPT-4o-mini extracts medications, diagnosis, summaries | ✅ Active (migrated to Groq / Qwen) |
+| OCR Pipeline | PyMuPDF text extraction, PaddleOCR for images | ✅ Done (PyMuPDF + PaddleOCR, scanned-PDF fallback) |
+| Smart Summarization | Auto-generate 1-line + detailed summaries | ✅ Active (Groq) |
+| AI Healthcare Assistant | RAG chatbot using LangChain + pgvector | ✅ Done (real pgvector RAG retrieval) |
 
-**Blocker:** OpenAI API quota needs recharge. All code is ready — activate by adding credits.
+**Update (21 Oct 2026):** AI provider migrated from OpenAI → **Groq** (Qwen) with 7-key
+auto-rotation + model fallback (ported from bizmind-ai). AI Chat Assistant, health-score
+insights, and document reprocess all implemented and verified end-to-end.
+
+### ✅ Completed this session (21 Oct 2026)
+
+| Feature | Detail | Status |
+|---------|--------|--------|
+| Groq migration | `app/services/groq_client.py` (7-key rotation), `ai_processing.py` rewritten to Groq/Qwen with `<think>` stripping + model fallback chain | ✅ Done |
+| AI Chat Assistant | `POST /api/v1/assistant/chat` (backend `endpoints/chat.py`) + frontend `pages/ChatPage.tsx` at `/chat`, grounded in user's records, safety guardrails | ✅ Done |
+| Health Score + Insights | `GET /api/v1/documents/insights` (heuristic score + abnormal labs + conditions + meds) wired into DashboardPage | ✅ Done |
+| Document reprocess | `POST /api/v1/documents/{id}/reprocess` + `get_file_from_s3` + frontend "Reprocess" button for failed/pending docs | ✅ Done |
+| Bug fixes | White-screen crash (`dragOver5` typo) in DocumentUpload; silent `except: pass` on upload now logs + stores failure reason; `useState`→`useEffect` mount fix | ✅ Done |
+| Dockerfile | pip install now uses `--timeout 120 --retries 10` to survive slow networks | ✅ Done |
+
+**Still NOT done in Phase 3:** PaddleOCR for image/handwritten documents (currently only
+PDF text extraction via PyMuPDF works; uploading a scanned image will extract no text).
+Real vector/pgvector RAG retrieval is NOT implemented — the chat assistant currently
+stuffs recent record summaries into the prompt as context (works well for now, but does
+not scale to many documents). See pending section below.
 
 ---
 
-## ⬜ Phase 4 — Predictive Analytics (Planned)
+## 🟡 Phase 4 — Predictive Analytics (Mostly Done)
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| Heart Disease Risk Model | XGBoost trained on UCI Heart Disease dataset | ⬜ Planned |
-| Diabetes Prediction | Model trained on UCI Pima Diabetes dataset | ⬜ Planned |
-| Chronic Kidney Disease | Model trained on UCI CKD dataset | ⬜ Planned |
-| SHAP Explainability | Visual explanations for every prediction | ⬜ Planned |
-| Risk Dashboard | Show risk scores + trends over time | ⬜ Planned |
+| Heart Disease Risk Model | sklearn GradientBoosting on REAL UCI Cleveland data (303 rows), AUC ~0.65 | ✅ Done (real data) |
+| Diabetes Prediction | sklearn GradientBoosting on REAL Pima data (768 rows), AUC ~0.83 | ✅ Done (real data) |
+| Chronic Kidney Disease | sklearn GradientBoosting on REAL UCI CKD data (399 rows), AUC ~1.0 | ✅ Done |
+| SHAP Explainability | Per-feature contribution (importance × deviation from healthy baseline) | ✅ Done |
+| Risk Dashboard | `/risk` page, 3 tabs (CVD/Diabetes/CKD) → score + factors + recommendations; history persisted | ✅ Done |
+
+> Models: `app/ml/train.py` + `app/ml/predict.py`, endpoints `/api/v1/predictions/{status,cardiovascular,diabetes,ckd,history}`.
+> CKD trained on the real UCI dataset (`datasets/ckd.arff`). Heart/Diabetes use realistic
+> synthetic data — drop real UCI CSVs in `app/ml/datasets/` + re-run `python -m app.ml.train` to swap.
 
 ---
 
@@ -61,11 +97,10 @@
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| Notifications & Reminders | Medicine reminders, follow-up alerts | ⬜ Planned |
-| Doctor Portal | Doctors can view patient records (with consent) | ⬜ Planned |
-| Family Health Profiles | Manage health records for family members | ⬜ Planned |
-| Export & Share | PDF health report generation, share with doctors | ⬜ Planned |
-| Mobile Responsive | Full mobile-optimized UI | ⬜ Planned |
+| Notifications & Reminders | Medicine reminders, follow-up alerts | ✅ Done (in-app CRUD + recurrence + SMTP email on create + **background scheduler that auto-emails when due**) |
+| Family Health Profiles | Manage health records for family members | ✅ Done (CRUD: name, relation, DOB, blood group, allergies, conditions) |
+| Export & Share | PDF health report generation, share with doctors | ✅ Done (PDF report via reportlab) |
+| Mobile Responsive | Full mobile-optimized UI | 🟡 Partial (responsive nav + padding; family/reminders pages mobile-friendly) |
 
 ---
 
@@ -73,23 +108,116 @@
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| AWS Deployment | ECS + RDS + S3 + CloudFront | ⬜ Planned |
-| Terraform IaC | Full infrastructure as code | ⬜ Planned |
+| AWS Deployment | ECS + RDS + S3 + CloudFront | 🟡 IaC written (`infra/`), apply pending (needs AWS creds) |
+| Terraform IaC | Full infrastructure as code | ✅ Done (VPC, ECS Fargate, ALB, RDS PG16, S3, ECR, Secrets Mgr) |
+| Supabase + Render deploy | Free-tier alt to AWS: Supabase PG+pgvector+Storage, Render backend | ✅ Config done (`render.yaml`, `docs/DEPLOY_SUPABASE_RENDER.md`); storage boto3 made Supabase-compatible; email SMTP verified live |
 | Monitoring | CloudWatch, Sentry, health checks | ⬜ Planned |
 | Load Testing | k6/Locust performance benchmarks | ⬜ Planned |
 | HIPAA Compliance | Encryption at rest, audit logs, access controls | ⬜ Planned |
+| pgAdmin (DB GUI) | Web UI to inspect PostgreSQL | ✅ Done (docker-compose `pgadmin` on :5050, admin@lifelink.com/admin) |
 
 ---
 
 ## 📈 Progress Summary
 
 ```
-Phase 1 [████████████████████] 100% — Foundation
-Phase 2 [████████████████████] 100% — Core Features
-Phase 3 [██████░░░░░░░░░░░░░░]  30% — AI Intelligence
-Phase 4 [░░░░░░░░░░░░░░░░░░░░]   0% — Predictive Analytics
-Phase 5 [░░░░░░░░░░░░░░░░░░░░]   0% — Advanced Features
-Phase 6 [░░░░░░░░░░░░░░░░░░░░]   0% — Production & Scale
+Phase 1   [████████████████████] 100% — Foundation
+Phase 2   [████████████████████] 100% — Core Features
+Phase 2.5 [████████████████████] 100% — Role-Based UI
+Phase 3   [████████████████████] 100% — AI Intelligence
+Phase 4   [██████████████████░░]  90% — Predictive Analytics (heart + diabetes + CKD models, risk dashboard, explainability; MIMIC pending)
+Phase 5   [████████████████░░░░]  80% — Advanced Features (reminders+email+auto-scheduler, PDF, family; partial mobile)
+Phase 6   [█████░░░░░░░░░░░░░░░]  25% — Production & Scale (Terraform + Supabase/Render configs, pgAdmin; deploy pending)
+```
+
+---
+
+## 🗄️ Database Status (as of 16 Sep 2026)
+
+**10 Tables — PostgreSQL 16 + pgvector**
+
+| Table | Rows | Purpose |
+|-------|------|---------|
+| users | 4 | Patient, doctor, admin accounts |
+| medical_documents | 4 | Uploaded medical files |
+| user_profiles | 2 | DOB, blood group, allergies etc |
+| health_events | 0 | Timeline events (future) |
+| chat_sessions | 0 | AI chatbot (future) |
+| chat_messages | 0 | AI chatbot messages (future) |
+| document_embeddings | 0 | pgvector RAG (future) |
+| health_metrics | 0 | Health trends (future) |
+| risk_assessments | 0 | ML predictions (future) |
+
+---
+
+## 🐳 Docker Services (all running)
+
+| Container | Image | Port | Status |
+|-----------|-------|------|--------|
+| lifelink-frontend | node:20-alpine | 5173 | ✅ Running |
+| lifelink-backend | python:3.11-slim | 8000 | ✅ Running |
+| lifelink-postgres | pgvector/pgvector:pg16 | 5432 | ✅ Healthy |
+| lifelink-redis | redis:7-alpine | 6379 | ✅ Healthy |
+| lifelink-minio | minio/minio | 9000/9001 | ✅ Healthy |
+
+**Start command:** `docker compose up -d` (from project root)
+
+---
+
+## 👥 Demo Accounts
+
+| Role | Email | Password |
+|------|-------|----------|
+| Patient | saransh@test.com | password123 |
+| Doctor | doctor@lifelink.com | password123 |
+| Admin | admin@lifelink.com | password123 |
+
+---
+
+## 🗂️ Project File Structure
+
+```
+project-lifelink/
+├── frontend/src/
+│   ├── App.tsx                  ← All routes
+│   ├── main.tsx                 ← Entry point
+│   ├── pages/
+│   │   ├── LandingPage.tsx      ← Home
+│   │   ├── LoginPage.tsx        ← Login (role-based redirect)
+│   │   ├── RegisterPage.tsx     ← Signup
+│   │   ├── DashboardPage.tsx    ← Patient dashboard
+│   │   ├── DoctorPage.tsx       ← Doctor portal ← NEW
+│   │   ├── AdminPage.tsx        ← Admin panel
+│   │   ├── TimelinePage.tsx     ← Health timeline
+│   │   └── ProfilePage.tsx      ← User profile
+│   ├── components/
+│   │   ├── ProtectedRoute.tsx   ← Auth + RoleRoute guard ← UPDATED
+│   │   └── DocumentUpload.tsx   ← File upload
+│   └── services/
+│       └── api.ts               ← All API calls
+│
+├── backend/app/
+│   ├── main.py                  ← FastAPI entry point
+│   ├── api/v1/endpoints/
+│   │   ├── auth.py              ← Login/Signup/Me
+│   │   ├── documents.py         ← Upload/Download/Delete
+│   │   ├── profile.py           ← Profile CRUD
+│   │   ├── admin.py             ← Admin management
+│   │   └── health.py            ← Health check
+│   ├── models/                  ← 8 DB models
+│   ├── services/
+│   │   ├── ai_processing.py     ← Groq/Qwen document reading
+│   │   ├── groq_client.py       ← Groq 7-key auto-rotation ← NEW
+│   │   └── storage.py           ← MinIO file storage
+│   └── core/
+│       ├── config.py
+│       ├── database.py
+│       ├── security.py          ← JWT + bcrypt
+│       └── dependencies.py      ← require_role()
+│
+├── docker-compose.yml
+├── scripts/init-db.sql
+└── .github/workflows/           ← CI/CD
 ```
 
 ---
@@ -98,7 +226,7 @@ Phase 6 [░░░░░░░░░░░░░░░░░░░░]   0% — 
 
 | Decision | Choice | Reason |
 |----------|--------|--------|
-| LLM Provider | OpenAI (GPT-4o-mini) | Cost-effective, high quality, JSON mode |
+| LLM Provider | **Groq (Qwen qwen3.8-27b)** — OpenAI legacy/unused | Free tier, fast, 7-key rotation for quota; migrated 21 Oct 2026 |
 | OCR | PyMuPDF + PaddleOCR | Free, accurate, supports handwritten text |
 | Storage | MinIO (dev) / S3 (prod) | S3-compatible, easy migration |
 | ML Framework | XGBoost + Scikit-learn | Fast, interpretable, proven in healthcare |
@@ -109,7 +237,289 @@ Phase 6 [░░░░░░░░░░░░░░░░░░░░]   0% — 
 
 ## 🎯 Next Priorities
 
-1. **Recharge OpenAI** → Activate AI document processing
-2. **Train ML models** → Start with heart disease prediction
-3. **RAG Chatbot** → LangChain + pgvector health assistant
+1. **PaddleOCR** → Complete OCR pipeline for image-based documents
+2. **RAG Chatbot** → LangChain + pgvector health assistant
+3. **Train ML models** → Start with heart disease prediction (UCI dataset)
 4. **AWS Deploy** → Get it live on the internet
+
+
+---
+
+## 🚧 PENDING TASKS — what I (Kiro) could NOT do, and what YOU must give me next time
+
+> These tasks need external accounts, credentials, large datasets, or heavy
+> dependencies that can't be set up in a normal coding session. For each one,
+> the "What to give Kiro" column is EXACTLY what you should hand me next time so
+> I can finish it. Just paste/attach those and say "do this task".
+
+### 1. 🧠 Predictive ML Models (Phase 4) — Heart / Diabetes / CKD
+
+**Why not done:** Needs real datasets downloaded locally + model training (takes time + disk).
+
+**What to give Kiro next time:**
+- Download these public UCI datasets (CSV) and put them in `backend/app/ml/datasets/`:
+  - Heart Disease: https://archive.ics.uci.edu/dataset/45/heart+disease
+  - Pima Diabetes: https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database
+  - Chronic Kidney Disease: https://archive.ics.uci.edu/dataset/336/chronic+kidney+disease
+- Tell me: "train the models" — I will then write the training scripts (XGBoost +
+  scikit-learn), save `.joblib` models, add `/api/v1/predictions/*` endpoints, and a
+  Risk Dashboard page. SHAP explainability included.
+- NOTE: No credentials needed — these are free/public. Just the CSV files in that folder.
+
+### 2. 🏥 MIMIC-IV (hospital readmission model)
+
+**Why not done:** MIMIC-IV requires CITI training + PhysioNet credentialed access (legal gate).
+
+**What to give Kiro next time:**
+- Complete CITI training + PhysioNet credentialing yourself (I cannot do this for you).
+- Download MIMIC-IV, place the relevant CSVs in `backend/app/ml/datasets/mimic/`.
+- Then tell me "build the readmission model".
+
+### 3. 👁️ PaddleOCR — read scanned images & handwritten prescriptions (Phase 3)
+
+**Why not done:** PaddleOCR is a heavy dependency (~hundreds of MB) and needs to be added
+to the Docker image + requirements; right now only text-based PDFs are read (PyMuPDF).
+
+**What to give Kiro next time:**
+- Just say "add PaddleOCR". No account needed. I will:
+  - Add `paddleocr` + `paddlepaddle` to `requirements.txt`
+  - Add an image→text branch in `ai_processing.py` (detect image mime → OCR → Groq)
+  - Rebuild the backend image (will be a longer build)
+- Optional: tell me if you want Hindi support too (adds `lang='hi'`).
+
+### 4. 🔎 Real RAG with pgvector (upgrade the AI chat)
+
+**Why not done:** Current chat stuffs recent record summaries into the prompt (good enough
+for a few docs). True RAG needs an embedding model + pgvector storage + retrieval.
+
+**What to give Kiro next time:**
+- Say "upgrade chat to real RAG". No account needed (uses local sentence-transformers).
+- I will: add `sentence-transformers`, create `document_embeddings` writes on upload,
+  and switch the chat to vector similarity search over chunks.
+- Heads up: `sentence-transformers` is a large dependency (slower Docker build).
+
+### 5. ☁️ AWS Deployment (Phase 7)
+
+**Why not done:** Needs YOUR AWS account + credentials; deploying spends real money.
+
+**What to give Kiro next time (any ONE path):**
+- Path A (simplest): an AWS account with the **AWS CLI already configured** (`aws configure`
+  done, or env vars `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_DEFAULT_REGION`).
+  Then say "deploy to AWS ECS" — I'll write Terraform/ECS config and guide the apply.
+- Path B: just say "write the Terraform/infra code" — I can author all the IaC WITHOUT
+  deploying, so you can review and `terraform apply` yourself later.
+- Tell me target region + a rough budget (affects instance sizes).
+
+### 6. 🔔 Notifications & Reminders (Phase 5)
+
+**Why not done:** Email/push needs SMTP or a provider account (SendGrid/SES) + secrets.
+
+**What to give Kiro next time:**
+- For email: give me SMTP host/port/user/pass (or a SendGrid/SES API key). Put them in
+  `backend/.env` and tell me the var names.
+- For in-app reminders only (no external account): say "add in-app reminders" — I can do
+  that with just the DB + a background job, no credentials.
+
+### 7. 📄 Export / Share health report as PDF (Phase 5)
+
+**Why not done:** Not started this session; no blocker — just needs build time.
+
+**What to give Kiro next time:**
+- Just say "add PDF export". No account needed. I'll add a `reportlab`/`weasyprint`-based
+  endpoint that generates a health summary PDF from the user's records + insights.
+
+---
+
+## 🧾 Quick reference — current credentials/config already in place
+
+| Thing | Where | Status |
+|-------|-------|--------|
+| Groq API keys (7) | `backend/.env` → `GROQ_API_KEY..._7` | ✅ working |
+| Groq model | `qwen/qwen3.8-27b` | ✅ |
+| OpenAI key | `backend/.env` → `OPENAI_API_KEY` | legacy, unused |
+| MinIO (S3) | `localhost:9000` / console `9001`, `minioadmin`/`minioadmin` | ✅ |
+| Postgres | `localhost:5432`, `lifelink`/`lifelink`/`lifelink_db` | ✅ |
+| AWS creds | — | ❌ NOT set (needed for Phase 7) |
+| SMTP / email | — | ❌ NOT set (needed for notifications) |
+| UCI datasets | — | ❌ NOT downloaded (needed for ML models) |
+
+---
+
+## 📝 Session Log — 28 Oct 2026 (part 6)
+
+Switched Heart + Diabetes models from synthetic → **real public datasets** (for demo).
+
+| Item | Detail | Status |
+|------|--------|--------|
+| Heart dataset | Real UCI Cleveland (`datasets/heart_cleveland.data`, 303 rows); `train.py _load_heart_cleveland` (age, sex, cholesterol, systolic_bp, fbs→diabetic; smoker/bmi absent→median). AUC ~0.65 | ✅ |
+| Diabetes dataset | Real Pima (`datasets/pima_diabetes.csv`, 768 rows); `train.py _load_pima_diabetes` (pedigree>0.5→family_history). AUC ~0.83 | ✅ |
+| Model tuning | `_train_one` → shallower/regularised GB (depth 2, lr 0.05, subsample 0.9) for small real sets | ✅ |
+| Verify | Retrained in-container; live `/predictions/cardiovascular` → 78% critical with sensible drivers; models synced to host + `docker commit` | ✅ E2E |
+
+All 3 risk models now train on **real data** (Heart UCI, Diabetes Pima, CKD UCI). Only MIMIC-IV remains (PhysioNet-gated).
+
+---
+
+
+
+Reminder auto-notifications, docs, DB GUI, and project cleanup.
+
+| Item | Detail | Status |
+|------|--------|--------|
+| Reminder scheduler | `services/scheduler.py` — dependency-free asyncio loop (every 60s) emails due reminders, rolls recurring; started in `main.py` lifespan; `reminders.notified` column added | ✅ E2E verified (past-due reminder → notified=true) |
+| Email verified live | Fixed SMTP user → `saranshrajput1301@gmail.com`; test email `sent: True` | ✅ |
+| Full project documentation | `docs/PROJECT_DOCUMENTATION.md` — every file + tech explained (why), architecture, features, security, + root-level files section | ✅ |
+| Test reports | `backend/scripts/make_test_reports.py` → 5 realistic PDFs (lab/prescription/discharge/kidney/thyroid) copied to `~/Desktop/LIFELINK_test_reports/` | ✅ |
+| Health score simplified | `_compute_insights` in documents.py: removed nested subquery, clear comments (100 − labs×8[≤40] − conditions×6[≤30], floor 30) | ✅ |
+| pgAdmin | Added to docker-compose (`:5050`) to view PostgreSQL in browser | ✅ |
+| Project cleanup | Removed empty `infrastructure/`, `ml-notebooks/`, CKD `.rar/.zip`, old `sample-reports/`, duplicate `LIFELINK_ROADMAP.md`, `.DS_Store`; moved `CleanPipe_Documentation.md` → docs/; gitignore += terraform/archives | ✅ |
+
+**Data storage (for reference):** PostgreSQL (`postgres_data` vol) = all structured data;
+MinIO (`minio_data` vol, console :9001) = uploaded files; Redis (`redis_data`) = cache.
+**Still pending (external):** AWS/Supabase actual deploy (creds), MIMIC-IV (PhysioNet),
+monitoring/load-test/HIPAA, full mobile pass.
+
+---
+
+## 📝 Session Log — 28 Oct 2026 (part 4)
+
+Completed CKD model (real UCI data), SMTP email, and AWS Terraform IaC.
+
+| Item | Detail | Status |
+|------|--------|--------|
+| CKD model | Extracted UCI CKD `.arff` (bsdtar) → `datasets/ckd.arff`; `train.py` parses 399 real rows, 9 features; AUC ~1.0; `/predictions/ckd` endpoint + RiskPage CKD tab | ✅ E2E verified (99% critical) |
+| Email (SMTP) | `services/email.py` + config SMTP vars + `.env` (Gmail app pw); reminder-create sends confirmation (best-effort, graceful) | 🟡 wired; send fails as auth (need correct Gmail addr — guessed saranshrajput@gmail.com) |
+| AWS Terraform | `infra/` — VPC+subnets, ECS Fargate+ALB, RDS PG16, S3, ECR, Secrets Manager, IAM; README + tfvars.example; gitignore updated | ✅ written (apply pending AWS creds) |
+| Image commit | ckd model + email + predictions baked into image; fresh-recreate verified (3 models + email config) | ✅ |
+
+**⚠️ Security:** Gmail app password is in `backend/.env` and was shown on screen — **revoke it after the demo**.
+**Still pending (external):** email needs correct Gmail address; AWS apply (step 1 `aws configure` by user, then deploy); MIMIC-IV (PhysioNet); full mobile pass.
+
+---
+
+## 📝 Session Log — 28 Oct 2026 (part 3)
+
+Added **Phase 4 — Predictive Analytics** (heart + diabetes), demo-ready & verified live.
+
+| Item | Detail | Status |
+|------|--------|--------|
+| ML training | `app/ml/train.py` — sklearn GradientBoosting (xgboost absent); realistic synthetic data, UCI-CSV-ready. Heart AUC 0.76, Diabetes AUC 0.78; saved to `app/ml/models_store/*.joblib` | ✅ |
+| Prediction + explainability | `app/ml/predict.py` — lazy model load, risk score/level, per-feature contribution (importance × deviation from healthy baseline) + rule-based recommendations + NL explanation | ✅ |
+| Endpoints | `endpoints/predictions.py` → `/predictions/{status,cardiovascular,diabetes,history}`; results persisted to `risk_assessments` | ✅ E2E verified (critical=96%/93%, history=2) |
+| Risk Dashboard | `pages/RiskPage.tsx` + `/risk` route + Dashboard "Risk" nav; tabbed CVD/diabetes form → score gauge + factors + recommendations | ✅ tsc clean |
+| Image commit | models + code committed into `project-lifelink-backend:latest` | ✅ |
+
+**Still pending (need external inputs):** CKD model (UCI CKD CSV), MIMIC-IV readmission
+(PhysioNet creds), AWS deploy (AWS creds), email notifications (SMTP). xgboost optional
+(sklearn used instead to avoid a large download).
+
+---
+
+## 📝 Session Log — 28 Oct 2026 (part 2)
+
+Added **Family Health Profiles** (Phase 5) full-stack + partial mobile-responsive, demo-ready.
+
+| Item | Detail | Status |
+|------|--------|--------|
+| Family — backend | `models/family_member.py`, `schemas/family_member.py`, `endpoints/family.py` (CRUD, owner-scoped), registered in router; `family_members` table created in live DB | ✅ E2E verified (login→create→list) |
+| Family — frontend | `pages/FamilyPage.tsx` + `/family` route + Dashboard nav link; add/list/delete with relation, DOB+age, blood group, allergies, conditions | ✅ tsc clean |
+| Mobile responsive | Dashboard nav → `flex-col sm:flex-row` + horizontal-scroll links (`.no-scrollbar` in index.css); responsive padding on Dashboard + Family main | 🟡 partial |
+| Image commit | backend changes committed into `project-lifelink-backend:latest` (flaky network → commit instead of full rebuild) | ✅ |
+
+**Next (still blocked on inputs):** ML models (UCI CSVs), MIMIC-IV (PhysioNet creds),
+AWS deploy (AWS creds), email notifications (SMTP). Full mobile pass across all pages pending.
+
+---
+
+## 📝 Session Log — 28 Oct 2026
+
+Resolved the two runtime blockers left open on 27 Oct — both now **verified live** on the
+running Docker stack (not just syntax-checked):
+
+| Fix | Detail | Status |
+|-----|--------|--------|
+| RAG embeddings (torch CUDA crash) | `torch-2.14.1` GPU wheel crashed at import (`libcublasLt.so not found`). Dockerfile now installs CPU-only `torch==2.14.1+cpu` from `download.pytorch.org/whl/cpu` (`--no-deps`, ~159MB vs 454MB); dropped unused local `wheels/` wheel. Pinned `transformers<5.0.0` (5.x breaks sentence-transformers 3.1.0). | ✅ Verified: `embeddings.is_available()` True, 384-dim; live index→retrieve over pgvector cosine returned correct chunk |
+| PaddleOCR (`libGL.so.1`) | Dockerfile already had `libgl1/libglib2.0-0/libgomp1`; running image was stale. Verified in-container. | ✅ Verified: OCR extracted `Hemoglobin 12.5 g/dL` from a generated image |
+
+**Next:** fixes ab image me permanent hain (flaky network pe `docker compose build` baar-baar
+~1GB wheels download kar raha tha, isliye live-patched container ko `docker commit` se
+`project-lifelink-backend:latest` me baked kiya; fresh `--force-recreate` pe verify: RAG True,
+torch 2.14.1+cpu cuda=False, libGL present, transformers 4.57.6). Dockerfile me pip cache-mount
+(`--mount=type=cache`) bhi add kiya taaki future clean rebuilds me wheels dobara download na hon.
+Remaining pending tasks unchanged: ML models (UCI CSVs), MIMIC-IV (PhysioNet creds),
+AWS deploy (AWS creds), email (SMTP).
+
+---
+
+
+
+Completed 4 tasks (one-by-one) — all code-complete, syntax-checked (py_compile) and
+frontend type-checked (tsc clean). Runtime verification pending next `docker compose up`.
+
+1. **PaddleOCR** — `ai_processing.py` now OCRs images (PaddleOCR) and falls back to
+   page-render OCR for scanned PDFs; `process_document(mime_type)` routes PDF vs image.
+   Deps: `paddleocr`, `paddlepaddle`, `Pillow`, `numpy`. Engine lazy-loaded (graceful if absent).
+2. **PDF export** — `services/report.py` (reportlab) + `GET /documents/report/pdf`;
+   dashboard "Download Health Report (PDF)" button (blob download).
+3. **In-app reminders** — `models/reminder.py`, `schemas/reminder.py`,
+   `endpoints/reminders.py` (CRUD + `/done` with recurrence roll-over), router + alembic
+   migration `a1b2c3d4e5f6`; frontend `RemindersPage.tsx` + `/reminders` route + nav link.
+4. **Real RAG (pgvector)** — `services/embeddings.py` (sentence-transformers MiniLM 384-d,
+   lazy singleton) + `services/rag.py` (chunk/index/retrieve via cosine distance);
+   `document_embeddings.embedding vector(384)` column + ivfflat index (migration
+   `b2c3d4e5f6a7`). Embeddings written on upload/reprocess; chat retrieves top-5 chunks,
+   falls back to summary context when embeddings unavailable.
+
+**Next session (still blocked on inputs):** ML models (Heart/Diabetes/CKD — need UCI CSVs
+in `backend/app/ml/datasets/`), MIMIC-IV (PhysioNet creds), AWS deploy (AWS creds),
+email notifications (SMTP/SendGrid). After `docker compose build` run `alembic upgrade head`
+to apply the two new migrations.
+
+### 🚀 Deploy status (27 Oct 2026, local Docker)
+
+Built + deployed the backend image and ran all services. **Verified live** on the running
+stack:
+
+| Item | Status |
+|------|--------|
+| Backend image build (torch via local wheel `--no-deps`, sentence-transformers `--no-deps` to avoid ~2GB CUDA pulls) | ✅ Built |
+| All containers up (postgres/redis/minio/backend/frontend) | ✅ Running, DB healthy |
+| Alembic `upgrade head` (reminders + embedding vector migrations) | ✅ Applied |
+| Login + Reminders API (create / list / done, daily recurrence) | ✅ Verified E2E |
+| PDF health report `GET /documents/report/pdf` | ✅ Verified (valid 1-page PDF) |
+| New routes in OpenAPI (reminders, report, insights, assistant) | ✅ Present |
+
+**Still being fixed (runtime system libs):**
+- **PaddleOCR** — import failed with `libGL.so.1` missing → added `libgl1 libglib2.0-0`
+  to the Dockerfile; rebuilding to verify.
+- **RAG embeddings** — torch 2.14.1 aarch64 wheel looks for CUDA `libcublasLt.so` at
+  runtime (we skip CUDA on CPU deploy) → added `libgomp1`; if torch still demands CUDA,
+  next step is a CPU-only torch wheel. Chat degrades gracefully to summary-context RAG
+  meanwhile, so the assistant still works.
+
+> Downloads note: torch wheel (454MB) + transformers/opencv/paddle are large; on a slow
+> network the backend image build can take 20-40 min. torch wheel is cached in
+> `backend/wheels/` so it isn't re-fetched.
+
+> **Build-in-progress note (27 Oct):** After adding the system libs (`libgl1`,
+> `libglib2.0-0`, `libgomp1`) to the Dockerfile, the apt layer change invalidated the
+> pip cache, so the image is rebuilding and re-downloading all pip wheels. The network is
+> flaky (intermittent DNS / read timeouts), but pip's `--retries 10` is recovering and
+> the build is progressing. The previously-built image (without the system libs) is still
+> deployed and serving, so reminders + PDF report remain live. Re-verify PaddleOCR + RAG
+> once this rebuild finishes with: `docker compose up -d backend` then the two check
+> snippets (`_get_ocr_engine()` and `embeddings.is_available()`).
+
+---
+
+## 📝 Session Log — 21 Oct 2026
+
+- Migrated AI from OpenAI → Groq (Qwen) with 7-key rotation (ported from bizmind-ai)
+- Built AI Chat Assistant (backend `chat.py` + frontend `ChatPage.tsx`, route `/chat`)
+- Added health-score + AI insights endpoint and wired into dashboard
+- Added document reprocess endpoint + button; fixed silent error swallowing
+- Fixed white-screen crash (`dragOver5` typo) and mount-effect bug in DocumentUpload
+- Hardened Dockerfile pip install (timeout + retries); cleaned broken dummy documents
+- Verified end-to-end: upload → Groq extraction → insights → chat all working
+- **Next session:** pick any task from the "PENDING TASKS" section above and give me the
+  listed inputs. Recommended order: PaddleOCR → ML models (UCI) → real RAG → AWS deploy.

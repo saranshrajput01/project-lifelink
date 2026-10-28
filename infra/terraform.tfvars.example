@@ -1,0 +1,18 @@
+# Copy to terraform.tfvars and edit. Do NOT commit terraform.tfvars (secrets).
+
+aws_region   = "ap-south-1"
+environment  = "production"
+project_name = "lifelink"
+
+# Keep NAT gateway on for production; set false for a cheaper dev deploy
+# (ECS tasks then run in public subnets with public IPs).
+enable_nat_gateway = true
+
+# Sizing (defaults are the cheapest viable)
+backend_cpu           = 256
+backend_memory        = 512
+backend_desired_count = 1
+db_instance_class     = "db.t4g.micro"
+
+# App secret — paste one of your Groq keys here (goes into Secrets Manager)
+groq_api_key = "gsk_xxx_your_groq_key"

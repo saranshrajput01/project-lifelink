@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { api } from '@/services/api'
 
@@ -30,11 +30,20 @@ interface Document {
 }
 
 export function AdminPage() {
+  const navigate = useNavigate()
   const [stats, setStats] = useState<Stats | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [documents, setDocuments] = useState<Document[]>([])
   const [activeTab, setActiveTab] = useState<'users' | 'documents'>('users')
   const [error, setError] = useState('')
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user_role')
+    localStorage.removeItem('user_name')
+    navigate('/')
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,9 +108,19 @@ export function AdminPage() {
           </div>
           <span className="text-xl font-black bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent">ADMIN PANEL</span>
         </div>
-        <Link to="/dashboard" className="px-4 py-2 text-gray-400 hover:text-white font-medium transition-colors border border-white/5 rounded-xl hover:border-white/20 hover:bg-white/5">
-          Dashboard
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link to="/admin" className="px-4 py-2 text-gray-400 hover:text-white font-medium transition-colors border border-white/5 rounded-xl hover:border-white/20 hover:bg-white/5">
+            Dashboard
+          </Link>
+          <motion.button
+            onClick={handleLogout}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-4 py-2 text-gray-400 hover:text-red-400 font-medium transition-colors border border-white/5 rounded-xl hover:border-red-500/20 hover:bg-red-500/5"
+          >
+            Logout
+          </motion.button>
+        </div>
       </nav>
 
       <main className="relative z-10 max-w-7xl mx-auto px-8 py-10">

@@ -100,6 +100,21 @@ services:
       - backend
     restart: unless-stopped
 
+  # ─── pgAdmin (Web GUI to view the PostgreSQL database) ───
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: lifelink-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@lifelink.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"   # open http://localhost:5050
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:

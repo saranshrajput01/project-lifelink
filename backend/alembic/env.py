@@ -21,6 +21,7 @@ from app.models.health_metric import HealthMetric  # noqa: F401
 from app.models.risk_assessment import RiskAssessment  # noqa: F401
 from app.models.chat import ChatSession, ChatMessage  # noqa: F401
 from app.models.embedding import DocumentEmbedding  # noqa: F401
+from app.models.reminder import Reminder  # noqa: F401
 
 settings = get_settings()
 config = context.config

@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime, timezone
 
 import boto3
+from botocore.client import Config
 from botocore.exceptions import ClientError
 
 from app.core.config import get_settings
@@ -14,13 +15,18 @@ settings = get_settings()
 
 
 def get_s3_client():
-    """Create an S3 client (works with both MinIO and AWS S3)."""
+    """Create an S3 client (works with MinIO, AWS S3, and Supabase Storage).
+
+    Path-style addressing + signature v4 are required for MinIO and Supabase's
+    S3-compatible endpoint; AWS S3 accepts them too, so we always set them.
+    """
     return boto3.client(
         "s3",
-        endpoint_url=settings.S3_ENDPOINT_URL,
+        endpoint_url=settings.S3_ENDPOINT_URL or None,
         aws_access_key_id=settings.S3_ACCESS_KEY,
         aws_secret_access_key=settings.S3_SECRET_KEY,
         region_name=settings.S3_REGION,
+        config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
     )
 
 
@@ -63,3 +69,13 @@ def get_download_url(s3_key: str, expires_in: int = 3600) -> str:
         Params={"Bucket": settings.S3_BUCKET_NAME, "Key": s3_key},
         ExpiresIn=expires_in,
     )
+
+
+def get_file_from_s3(s3_key: str) -> bytes | None:
+    """Download file bytes from S3/MinIO. Returns None on failure."""
+    client = get_s3_client()
+    try:
+        resp = client.get_object(Bucket=settings.S3_BUCKET_NAME, Key=s3_key)
+        return resp["Body"].read()
+    except ClientError:
+        return None

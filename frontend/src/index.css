@@ -29,3 +29,12 @@ html, body, #root {
   height: 100%;
   scroll-behavior: smooth;
 }
+
+/* Hide scrollbar for horizontally-scrollable nav on mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

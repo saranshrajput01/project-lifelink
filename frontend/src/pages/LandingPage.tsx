@@ -36,7 +36,7 @@ export function LandingPage() {
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px] animate-[pulse_8s_ease-in-out_infinite]" />
         <div className="absolute top-3/4 -right-32 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] animate-[pulse_10s_ease-in-out_infinite_2s]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[128px] animate-[pulse_12s_ease-in-out_infinite_4s]" />
-      </div>
+      </div> 5                                     
 
       {/* Grid + Noise texture */}
       <div className="fixed inset-0 z-0">
