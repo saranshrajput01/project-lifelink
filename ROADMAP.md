@@ -361,6 +361,7 @@ All 3 risk models now train on **real data** (Heart UCI, Diabetes Pima, CKD UCI)
 | GitHub push | Committed all new work (ML + RAG + reminders + family + infra + docs) and pushed to `main` (`github.com/saranshrajput01/project-lifelink`, public). `.gitignore` updated: keep `models_store/*.joblib` + datasets (`*.csv/*.data/*.arff`), exclude 433MB `backend/wheels/` | ✅ |
 | Security | Verified `.env` + Groq/AWS keys + Gmail app-pw **never** entered git history. ⚠️ Local `.env` Gmail app-password still live — revoke after demo | ✅ |
 | Shutdown | `docker compose down` — all containers + network removed (data safe in volumes). Restart: `docker compose up -d` | ✅ |
+| CI fix | GitHub Actions was red (Frontend + Backend Lint). Added ESLint v9 flat config (`frontend/eslint.config.js` + typescript-eslint/react-hooks plugins, lenient warnings); `black` auto-format (37 files) + `ruff --fix` (unused imports, `l`→`line`/`lab`). Frontend lint 0 errors, build green (463 modules), backend ruff+black pass. Pushed `8baac32` | ✅ |
 
 ---
 
