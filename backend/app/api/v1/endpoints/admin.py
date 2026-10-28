@@ -18,14 +18,26 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 @router.get("/stats", dependencies=[Depends(require_role("admin"))])
 async def get_platform_stats(db: AsyncSession = Depends(get_db)):
     """Get platform-wide statistics."""
-    total_users = (await db.execute(select(func.count()).select_from(User))).scalar() or 0
-    total_docs = (await db.execute(select(func.count()).select_from(MedicalDocument))).scalar() or 0
-    processed_docs = (await db.execute(
-        select(func.count()).select_from(MedicalDocument).where(MedicalDocument.processing_status == "completed")
-    )).scalar() or 0
-    pending_docs = (await db.execute(
-        select(func.count()).select_from(MedicalDocument).where(MedicalDocument.processing_status == "pending")
-    )).scalar() or 0
+    total_users = (
+        await db.execute(select(func.count()).select_from(User))
+    ).scalar() or 0
+    total_docs = (
+        await db.execute(select(func.count()).select_from(MedicalDocument))
+    ).scalar() or 0
+    processed_docs = (
+        await db.execute(
+            select(func.count())
+            .select_from(MedicalDocument)
+            .where(MedicalDocument.processing_status == "completed")
+        )
+    ).scalar() or 0
+    pending_docs = (
+        await db.execute(
+            select(func.count())
+            .select_from(MedicalDocument)
+            .where(MedicalDocument.processing_status == "pending")
+        )
+    ).scalar() or 0
 
     return {
         "total_users": total_users,

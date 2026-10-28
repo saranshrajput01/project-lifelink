@@ -22,7 +22,9 @@ from app.schemas.family_member import (
 router = APIRouter(prefix="/family", tags=["Family"])
 
 
-@router.post("/", response_model=FamilyMemberResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=FamilyMemberResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_member(
     payload: FamilyMemberCreate,
     user_id: str = Depends(get_current_user_id),

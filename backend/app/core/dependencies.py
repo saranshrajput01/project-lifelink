@@ -20,7 +20,7 @@ async def get_current_user_id(
     """
     Extract and validate the current user from the JWT token.
     Returns the user ID (subject) from the token.
-    
+
     Raises 401 if token is missing, expired, or invalid.
     """
     token = credentials.credentials
@@ -46,14 +46,15 @@ async def get_current_user_id(
 def require_role(*allowed_roles: str):
     """
     Dependency factory — restricts endpoint to specific roles.
-    
+
     Usage:
         @router.get("/admin-only", dependencies=[Depends(require_role("admin"))])
         async def admin_endpoint(): ...
-        
+
         @router.get("/staff", dependencies=[Depends(require_role("admin", "doctor"))])
         async def staff_endpoint(): ...
     """
+
     async def role_checker(
         user_id: str = Depends(get_current_user_id),
         db: AsyncSession = Depends(get_db),

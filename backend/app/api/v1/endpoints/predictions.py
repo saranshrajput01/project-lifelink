@@ -22,7 +22,7 @@ router = APIRouter(prefix="/predictions", tags=["Predictions"])
 
 class HeartInput(BaseModel):
     age: float = 50
-    sex: int = 0           # 1 = male
+    sex: int = 0  # 1 = male
     cholesterol: float = 200
     systolic_bp: float = 120
     smoker: int = 0
@@ -47,7 +47,7 @@ class CKDInput(BaseModel):
     blood_urea: float = 40
     serum_creatinine: float = 1.2
     hemoglobin: float = 13
-    albumin: float = 0       # urine albumin level 0-5
+    albumin: float = 0  # urine albumin level 0-5
     hypertension: int = 0
     diabetic: int = 0
 
@@ -63,23 +63,29 @@ class RiskResult(BaseModel):
     model_confidence: float | None = None
 
 
-async def _run_and_store(disease_type: str, inputs: dict, user_id: str, db: AsyncSession) -> dict:
+async def _run_and_store(
+    disease_type: str, inputs: dict, user_id: str, db: AsyncSession
+) -> dict:
     try:
         result = ml_predict.predict(disease_type, inputs)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
+        )
 
-    db.add(RiskAssessment(
-        patient_id=UUID(user_id),
-        disease_type=result["disease_type"],
-        risk_score=result["risk_score"],
-        risk_level=result["risk_level"],
-        contributing_factors=result["contributing_factors"],
-        recommendations=result["recommendations"],
-        explanation=result["explanation"],
-        model_version=result["model_version"],
-        model_confidence=result["model_confidence"],
-    ))
+    db.add(
+        RiskAssessment(
+            patient_id=UUID(user_id),
+            disease_type=result["disease_type"],
+            risk_score=result["risk_score"],
+            risk_level=result["risk_level"],
+            contributing_factors=result["contributing_factors"],
+            recommendations=result["recommendations"],
+            explanation=result["explanation"],
+            model_version=result["model_version"],
+            model_confidence=result["model_confidence"],
+        )
+    )
     await db.flush()
     return result
 

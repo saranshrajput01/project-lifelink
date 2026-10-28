@@ -5,7 +5,16 @@ Document endpoints — upload, list, get, delete medical documents.
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    Response,
+    UploadFile,
+    status,
+)
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,7 +24,13 @@ from app.models.document import MedicalDocument
 from app.models.profile import UserProfile
 from app.models.user import User
 from app.schemas.document import DocumentListResponse, DocumentResponse, UploadResponse
-from app.services.storage import ensure_bucket_exists, generate_s3_key, get_download_url, get_file_from_s3, upload_file_to_s3
+from app.services.storage import (
+    ensure_bucket_exists,
+    generate_s3_key,
+    get_download_url,
+    get_file_from_s3,
+    upload_file_to_s3,
+)
 from app.services.ai_processing import process_document
 from app.services.report import build_health_report
 from app.services.rag import index_document
@@ -35,10 +50,15 @@ ALLOWED_TYPES = {
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
 
 
-@router.post("/upload", response_model=UploadResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/upload", response_model=UploadResponse, status_code=status.HTTP_201_CREATED
+)
 async def upload_document(
     file: UploadFile = File(...),
-    doc_type: str = Query(default="other", regex="^(prescription|lab_report|discharge_summary|doctor_notes|vaccination|insurance|other)$"),
+    doc_type: str = Query(
+        default="other",
+        regex="^(prescription|lab_report|discharge_summary|doctor_notes|vaccination|insurance|other)$",
+    ),
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
@@ -66,7 +86,9 @@ async def upload_document(
     # Upload to S3/MinIO
     ensure_bucket_exists()
     s3_key = generate_s3_key(user_id, file.filename or "document")
-    success = await upload_file_to_s3(content, s3_key, file.content_type or "application/octet-stream")
+    success = await upload_file_to_s3(
+        content, s3_key, file.content_type or "application/octet-stream"
+    )
 
     if not success:
         raise HTTPException(
@@ -98,13 +120,17 @@ async def upload_document(
         filename=document.original_filename,
         doc_type=document.doc_type,
         status=document.processing_status,
-        message="Document uploaded. AI processing complete."
-        if document.processing_status == "completed"
-        else "Document uploaded, but AI processing failed. You can retry from the dashboard.",
+        message=(
+            "Document uploaded. AI processing complete."
+            if document.processing_status == "completed"
+            else "Document uploaded, but AI processing failed. You can retry from the dashboard."
+        ),
     )
 
 
-async def _run_ai_processing(document: MedicalDocument, content: bytes, mime_type: str = "application/pdf") -> None:
+async def _run_ai_processing(
+    document: MedicalDocument, content: bytes, mime_type: str = "application/pdf"
+) -> None:
     """Run the AI pipeline on a document and update its fields in place.
 
     Logs any failure and records the reason instead of silently swallowing it.
@@ -116,12 +142,15 @@ async def _run_ai_processing(document: MedicalDocument, content: bytes, mime_typ
         if ai_result.get("extracted_data") is None:
             document.ocr_status = "failed"
             document.processing_status = "failed"
-            document.summary_short = ai_result.get("summary_short") or "AI processing failed"
+            document.summary_short = (
+                ai_result.get("summary_short") or "AI processing failed"
+            )
             document.summary_detailed = ai_result.get("summary_detailed") or ""
             document.raw_text = ai_result.get("raw_text")
             logger.warning(
                 "[DOC] AI processing produced no data for %s: %s",
-                document.id, document.summary_detailed,
+                document.id,
+                document.summary_detailed,
             )
             return
 
@@ -139,6 +168,7 @@ async def _run_ai_processing(document: MedicalDocument, content: bytes, mime_typ
         if doc_date:
             try:
                 from datetime import datetime as dt
+
                 document.document_date = dt.strptime(doc_date, "%Y-%m-%d")
             except (ValueError, TypeError):
                 pass
@@ -181,7 +211,9 @@ async def reprocess_document(
     )
     document = result.scalar_one_or_none()
     if not document:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Document not found."
+        )
 
     content = get_file_from_s3(document.s3_key)
     if content is None:
@@ -304,7 +336,9 @@ async def _compute_insights(user_id: str, db: AsyncSession) -> dict:
 
     insights: list[str] = []
     if abnormal_labs:
-        insights.append(f"{len(abnormal_labs)} abnormal lab value(s) detected — review with your doctor.")
+        insights.append(
+            f"{len(abnormal_labs)} abnormal lab value(s) detected — review with your doctor."
+        )
     if conditions:
         insights.append("Noted conditions: " + ", ".join(sorted(conditions)))
     if medications:
@@ -330,13 +364,19 @@ async def download_health_report(
 ):
     """Generate a health summary PDF (profile + insights + records) and stream it."""
     # User
-    user = (await db.execute(select(User).where(User.id == UUID(user_id)))).scalar_one_or_none()
+    user = (
+        await db.execute(select(User).where(User.id == UUID(user_id)))
+    ).scalar_one_or_none()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
+        )
 
     # Profile (optional)
     profile = (
-        await db.execute(select(UserProfile).where(UserProfile.user_id == UUID(user_id)))
+        await db.execute(
+            select(UserProfile).where(UserProfile.user_id == UUID(user_id))
+        )
     ).scalar_one_or_none()
 
     # Insights
@@ -344,12 +384,16 @@ async def download_health_report(
 
     # Documents (newest first)
     docs = (
-        await db.execute(
-            select(MedicalDocument)
-            .where(MedicalDocument.patient_id == UUID(user_id))
-            .order_by(MedicalDocument.uploaded_at.desc())
+        (
+            await db.execute(
+                select(MedicalDocument)
+                .where(MedicalDocument.patient_id == UUID(user_id))
+                .order_by(MedicalDocument.uploaded_at.desc())
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     user_d = {"full_name": user.full_name, "email": user.email}
     profile_d = None

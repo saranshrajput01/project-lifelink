@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -45,7 +45,9 @@ async def create_reminder(
     await db.refresh(reminder)
 
     # Best-effort email confirmation (no-op if SMTP not configured).
-    user = (await db.execute(select(User).where(User.id == UUID(user_id)))).scalar_one_or_none()
+    user = (
+        await db.execute(select(User).where(User.id == UUID(user_id)))
+    ).scalar_one_or_none()
     if user and getattr(user, "email", None):
         send_email(
             to=user.email,
@@ -95,7 +97,9 @@ async def _get_owned(document_id: UUID, user_id: str, db: AsyncSession) -> Remin
     )
     reminder = result.scalar_one_or_none()
     if not reminder:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reminder not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Reminder not found."
+        )
     return reminder
 
 

@@ -61,14 +61,18 @@ def chat_with_rotation(messages: list[dict], model: str, **kwargs):
             with _lock:
                 _current_index = _next_key_index(_current_index, total)
                 key_num = _current_index + 1
-            logger.warning(f"[GROQ] Key #{idx+1} rate limited — rotating to key #{key_num}")
+            logger.warning(
+                f"[GROQ] Key #{idx+1} rate limited — rotating to key #{key_num}"
+            )
 
         except APIStatusError as e:
             if e.status_code == 429:
                 attempts += 1
                 with _lock:
                     _current_index = _next_key_index(_current_index, total)
-                logger.warning(f"[GROQ] Key #{idx+1} quota hit — rotating to key #{_current_index+1}")
+                logger.warning(
+                    f"[GROQ] Key #{idx+1} quota hit — rotating to key #{_current_index+1}"
+                )
             else:
                 raise
 

@@ -358,6 +358,10 @@ Switched Heart + Diabetes models from synthetic → **real public datasets** (fo
 
 All 3 risk models now train on **real data** (Heart UCI, Diabetes Pima, CKD UCI). Only MIMIC-IV remains (PhysioNet-gated).
 
+| GitHub push | Committed all new work (ML + RAG + reminders + family + infra + docs) and pushed to `main` (`github.com/saranshrajput01/project-lifelink`, public). `.gitignore` updated: keep `models_store/*.joblib` + datasets (`*.csv/*.data/*.arff`), exclude 433MB `backend/wheels/` | ✅ |
+| Security | Verified `.env` + Groq/AWS keys + Gmail app-pw **never** entered git history. ⚠️ Local `.env` Gmail app-password still live — revoke after demo | ✅ |
+| Shutdown | `docker compose down` — all containers + network removed (data safe in volumes). Restart: `docker compose up -d` | ✅ |
+
 ---
 
 

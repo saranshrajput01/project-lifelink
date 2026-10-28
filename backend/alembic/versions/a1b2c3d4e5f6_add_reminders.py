@@ -34,7 +34,9 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["patient_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_reminders_patient_id"), "reminders", ["patient_id"], unique=False)
+    op.create_index(
+        op.f("ix_reminders_patient_id"), "reminders", ["patient_id"], unique=False
+    )
     op.create_index(op.f("ix_reminders_due_at"), "reminders", ["due_at"], unique=False)
 
 

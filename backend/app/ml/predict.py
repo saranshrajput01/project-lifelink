@@ -22,22 +22,47 @@ _cache: dict[str, dict] = {}
 
 # Healthy baselines per feature (used to compute "how far from healthy" a value is).
 HEALTHY_BASELINE = {
-    "age": 40, "sex": 0, "cholesterol": 180, "systolic_bp": 115, "smoker": 0,
-    "bmi": 23, "diabetic": 0, "glucose": 95, "insulin": 90, "diastolic_bp": 75,
-    "pregnancies": 0, "family_history": 0,
+    "age": 40,
+    "sex": 0,
+    "cholesterol": 180,
+    "systolic_bp": 115,
+    "smoker": 0,
+    "bmi": 23,
+    "diabetic": 0,
+    "glucose": 95,
+    "insulin": 90,
+    "diastolic_bp": 75,
+    "pregnancies": 0,
+    "family_history": 0,
     # CKD features
-    "blood_glucose": 100, "blood_urea": 25, "serum_creatinine": 1.0,
-    "hemoglobin": 14, "albumin": 0, "hypertension": 0,
+    "blood_glucose": 100,
+    "blood_urea": 25,
+    "serum_creatinine": 1.0,
+    "hemoglobin": 14,
+    "albumin": 0,
+    "hypertension": 0,
 }
 
 # Human-readable labels + recommendation hints keyed by feature.
 FEATURE_LABELS = {
-    "age": "Age", "sex": "Male sex", "cholesterol": "Cholesterol", "systolic_bp": "Systolic BP",
-    "smoker": "Smoking", "bmi": "BMI", "diabetic": "Diabetic status", "glucose": "Blood glucose",
-    "insulin": "Insulin", "diastolic_bp": "Diastolic BP", "pregnancies": "Pregnancies",
+    "age": "Age",
+    "sex": "Male sex",
+    "cholesterol": "Cholesterol",
+    "systolic_bp": "Systolic BP",
+    "smoker": "Smoking",
+    "bmi": "BMI",
+    "diabetic": "Diabetic status",
+    "glucose": "Blood glucose",
+    "insulin": "Insulin",
+    "diastolic_bp": "Diastolic BP",
+    "pregnancies": "Pregnancies",
     "family_history": "Family history",
-    "blood_glucose": "Blood glucose", "blood_urea": "Blood urea", "serum_creatinine": "Serum creatinine",
-    "hemoglobin": "Hemoglobin", "albumin": "Albumin (urine)", "hypertension": "Hypertension",
+    "blood_glucose": "Blood glucose",
+    "blood_urea": "Blood urea",
+    "serum_creatinine": "Serum creatinine",
+    "hemoglobin": "Hemoglobin",
+    "albumin": "Albumin (urine)",
+    "hypertension": "Hypertension",
 }
 
 RECO_HINTS = {
@@ -107,7 +132,9 @@ def predict(disease_type: str, inputs: dict) -> dict:
     score = float(model.predict_proba(X)[0, 1])
 
     # Per-feature contribution: importance * normalised deviation from baseline.
-    importances = getattr(model, "feature_importances_", np.ones(len(features)) / len(features))
+    importances = getattr(
+        model, "feature_importances_", np.ones(len(features)) / len(features)
+    )
     contributions = []
     for f, val, imp in zip(features, row, importances):
         base = HEALTHY_BASELINE.get(f, 0)
@@ -116,12 +143,14 @@ def predict(disease_type: str, inputs: dict) -> dict:
         impact = float(imp) * deviation
         if abs(impact) < 1e-6:
             continue
-        contributions.append({
-            "factor": FEATURE_LABELS.get(f, f),
-            "value": round(val, 1),
-            "impact": round(abs(impact), 3),
-            "direction": "increases_risk" if impact > 0 else "lowers_risk",
-        })
+        contributions.append(
+            {
+                "factor": FEATURE_LABELS.get(f, f),
+                "value": round(val, 1),
+                "impact": round(abs(impact), 3),
+                "direction": "increases_risk" if impact > 0 else "lowers_risk",
+            }
+        )
     contributions.sort(key=lambda c: c["impact"], reverse=True)
     top = contributions[:4]
 
@@ -138,12 +167,19 @@ def predict(disease_type: str, inputs: dict) -> dict:
         recs = ["Maintain your healthy habits and keep up regular check-ups."]
 
     level = _risk_level(score)
-    _labels = {"cardiovascular": "cardiovascular", "diabetes": "diabetes", "ckd": "chronic kidney disease"}
+    _labels = {
+        "cardiovascular": "cardiovascular",
+        "diabetes": "diabetes",
+        "ckd": "chronic kidney disease",
+    }
     disease_label = _labels.get(disease_type, disease_type)
     explanation = (
         f"Estimated {disease_label} risk is {round(score * 100)}% ({level}). "
-        + (f"Main drivers: {', '.join(c['factor'] for c in top if c['direction'] == 'increases_risk')}. "
-           if any(c['direction'] == 'increases_risk' for c in top) else "")
+        + (
+            f"Main drivers: {', '.join(c['factor'] for c in top if c['direction'] == 'increases_risk')}. "
+            if any(c["direction"] == "increases_risk" for c in top)
+            else ""
+        )
         + "This is a screening estimate, not a diagnosis — consult a doctor."
     )
 

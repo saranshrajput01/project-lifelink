@@ -21,15 +21,21 @@ class Reminder(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     patient_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     reminder_type: Mapped[str] = mapped_column(
-        String(30), default="medication"  # medication | appointment | follow_up | test | custom
+        String(30),
+        default="medication",  # medication | appointment | follow_up | test | custom
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     # When the reminder is due
-    due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    due_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
     # Optional simple recurrence: none | daily | weekly | monthly
     recurrence: Mapped[str] = mapped_column(String(20), default="none")
     is_done: Mapped[bool] = mapped_column(Boolean, default=False)

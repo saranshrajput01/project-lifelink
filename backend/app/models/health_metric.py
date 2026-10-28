@@ -21,21 +21,30 @@ class HealthMetric(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     patient_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     document_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("medical_documents.id", ondelete="SET NULL"), nullable=True
+        UUID(as_uuid=True),
+        ForeignKey("medical_documents.id", ondelete="SET NULL"),
+        nullable=True,
     )
     # Metric details
     metric_type: Mapped[str] = mapped_column(
-        String(50), nullable=False, index=True
+        String(50),
+        nullable=False,
+        index=True,
         # blood_sugar_fasting | blood_sugar_pp | hba1c | hemoglobin
         # cholesterol_total | cholesterol_hdl | cholesterol_ldl
         # bp_systolic | bp_diastolic | creatinine | bun | egfr
         # tsh | t3 | t4 | alt | ast | bilirubin | uric_acid
     )
     value: Mapped[float] = mapped_column(Float, nullable=False)
-    unit: Mapped[str] = mapped_column(String(30), nullable=False)  # mg/dL, g/dL, mmHg, etc.
+    unit: Mapped[str] = mapped_column(
+        String(30), nullable=False
+    )  # mg/dL, g/dL, mmHg, etc.
     reference_min: Mapped[float | None] = mapped_column(Float, nullable=True)
     reference_max: Mapped[float | None] = mapped_column(Float, nullable=True)
     flag: Mapped[str | None] = mapped_column(
@@ -44,7 +53,9 @@ class HealthMetric(Base):
     source: Mapped[str] = mapped_column(
         String(30), default="document"  # document | manual | wearable
     )
-    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

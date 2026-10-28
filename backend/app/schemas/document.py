@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 class DocumentResponse(BaseModel):
     """Response model for a medical document."""
+
     id: UUID
     patient_id: UUID
     doc_type: str
@@ -30,6 +31,7 @@ class DocumentResponse(BaseModel):
 
 class DocumentListResponse(BaseModel):
     """Response for listing documents with pagination."""
+
     documents: list[DocumentResponse]
     total: int
     page: int
@@ -38,6 +40,7 @@ class DocumentListResponse(BaseModel):
 
 class UploadResponse(BaseModel):
     """Response after successful file upload."""
+
     id: UUID
     filename: str
     doc_type: str

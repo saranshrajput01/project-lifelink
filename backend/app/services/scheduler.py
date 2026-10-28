@@ -40,17 +40,25 @@ async def _process_due_reminders() -> int:
     now = datetime.now(timezone.utc)
     notified = 0
     async with async_session_factory() as db:
-        rows = (await db.execute(
-            select(Reminder).where(
-                Reminder.is_active == True,       # noqa: E712
-                Reminder.is_done == False,        # noqa: E712
-                Reminder.notified == False,       # noqa: E712
-                Reminder.due_at <= now,
+        rows = (
+            (
+                await db.execute(
+                    select(Reminder).where(
+                        Reminder.is_active == True,  # noqa: E712
+                        Reminder.is_done == False,  # noqa: E712
+                        Reminder.notified == False,  # noqa: E712
+                        Reminder.due_at <= now,
+                    )
+                )
             )
-        )).scalars().all()
+            .scalars()
+            .all()
+        )
 
         for r in rows:
-            user = (await db.execute(select(User).where(User.id == r.patient_id))).scalar_one_or_none()
+            user = (
+                await db.execute(select(User).where(User.id == r.patient_id))
+            ).scalar_one_or_none()
             if user and getattr(user, "email", None):
                 send_email(
                     to=user.email,

@@ -27,6 +27,7 @@ async def lifespan(app: FastAPI):
     print(f"   Environment: {settings.ENVIRONMENT}")
     print(f"   Debug: {settings.DEBUG}")
     from app.services.scheduler import start_scheduler, stop_scheduler
+
     start_scheduler()
     print("   ⏰ Reminder notification scheduler started")
     yield

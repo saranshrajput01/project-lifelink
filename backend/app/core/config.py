@@ -27,7 +27,9 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]  # Vite dev server
 
     # ─── Database (PostgreSQL + pgvector) ──────────────────
-    DATABASE_URL: str = "postgresql+asyncpg://lifelink:lifelink@localhost:5432/lifelink_db"
+    DATABASE_URL: str = (
+        "postgresql+asyncpg://lifelink:lifelink@localhost:5432/lifelink_db"
+    )
     DB_POOL_SIZE: int = 20
     DB_MAX_OVERFLOW: int = 10
 
@@ -71,8 +73,12 @@ class Settings(BaseSettings):
     def groq_api_keys(self) -> list[str]:
         """Return all configured Groq API keys (non-empty)."""
         keys = [
-            self.GROQ_API_KEY, self.GROQ_API_KEY_2, self.GROQ_API_KEY_3,
-            self.GROQ_API_KEY_4, self.GROQ_API_KEY_5, self.GROQ_API_KEY_6,
+            self.GROQ_API_KEY,
+            self.GROQ_API_KEY_2,
+            self.GROQ_API_KEY_3,
+            self.GROQ_API_KEY_4,
+            self.GROQ_API_KEY_5,
+            self.GROQ_API_KEY_6,
             self.GROQ_API_KEY_7,
         ]
         return [k for k in keys if k]

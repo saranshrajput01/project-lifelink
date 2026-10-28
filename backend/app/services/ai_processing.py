@@ -101,6 +101,7 @@ async def _ocr_pdf_pages(file_content: bytes) -> str:
     """Async wrapper — OCR a scanned PDF page by page."""
     return await asyncio.to_thread(_ocr_pdf_pages_sync, file_content)
 
+
 # Model fallback chain (same pattern as bizmind-ai orchestrator)
 _FALLBACK_MODELS = [
     settings.GROQ_MODEL_STRONG,
@@ -162,7 +163,9 @@ def _clean_llm_json(raw: str) -> str:
     """Strip Qwen <think>...</think> chain-of-thought and markdown fences."""
     raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
     if raw.startswith("```"):
-        raw = "\n".join(l for l in raw.split("\n") if not l.startswith("```")).strip()
+        raw = "\n".join(
+            line for line in raw.split("\n") if not line.startswith("```")
+        ).strip()
     return raw
 
 
@@ -170,7 +173,10 @@ def _extract_sync(text: str) -> dict:
     """Blocking Groq call with model fallback. Runs in a thread via asyncio."""
     messages = [
         {"role": "system", "content": EXTRACTION_PROMPT},
-        {"role": "user", "content": f"Extract data from this medical document:\n\n{text[:4000]}"},
+        {
+            "role": "user",
+            "content": f"Extract data from this medical document:\n\n{text[:4000]}",
+        },
     ]
 
     raw = ""
@@ -218,7 +224,9 @@ async def process_document_with_ai(text: str) -> dict:
     return await asyncio.to_thread(_extract_sync, text)
 
 
-async def process_document(file_content: bytes, mime_type: str = "application/pdf") -> dict:
+async def process_document(
+    file_content: bytes, mime_type: str = "application/pdf"
+) -> dict:
     """Full pipeline: (PDF text | image OCR) → AI → Structured Data.
 
     - PDFs: PyMuPDF text extraction. If a PDF has no selectable text (scanned),

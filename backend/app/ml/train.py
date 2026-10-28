@@ -28,18 +28,48 @@ DATASETS_DIR = os.path.join(HERE, "datasets")
 os.makedirs(MODELS_DIR, exist_ok=True)
 
 # Feature order MUST match the prediction service.
-HEART_FEATURES = ["age", "sex", "cholesterol", "systolic_bp", "smoker", "bmi", "diabetic"]
-DIABETES_FEATURES = ["glucose", "bmi", "age", "insulin", "diastolic_bp", "pregnancies", "family_history"]
+HEART_FEATURES = [
+    "age",
+    "sex",
+    "cholesterol",
+    "systolic_bp",
+    "smoker",
+    "bmi",
+    "diabetic",
+]
+DIABETES_FEATURES = [
+    "glucose",
+    "bmi",
+    "age",
+    "insulin",
+    "diastolic_bp",
+    "pregnancies",
+    "family_history",
+]
 CKD_FEATURES = [
-    "age", "systolic_bp", "blood_glucose", "blood_urea",
-    "serum_creatinine", "hemoglobin", "albumin", "hypertension", "diabetic",
+    "age",
+    "systolic_bp",
+    "blood_glucose",
+    "blood_urea",
+    "serum_creatinine",
+    "hemoglobin",
+    "albumin",
+    "hypertension",
+    "diabetic",
 ]
 
 # Map our CKD feature names -> column index in the UCI ARFF data rows (0-based).
 # ARFF order: age,bp,sg,al,su,rbc,pc,pcc,ba,bgr,bu,sc,sod,pot,hemo,pcv,wbcc,rbcc,htn,dm,cad,appet,pe,ane,class
 _CKD_ARFF_IDX = {
-    "age": 0, "systolic_bp": 1, "albumin": 3, "blood_glucose": 9, "blood_urea": 10,
-    "serum_creatinine": 11, "hemoglobin": 14, "hypertension": 18, "diabetic": 19,
+    "age": 0,
+    "systolic_bp": 1,
+    "albumin": 3,
+    "blood_glucose": 9,
+    "blood_urea": 10,
+    "serum_creatinine": 11,
+    "hemoglobin": 14,
+    "hypertension": 18,
+    "diabetic": 19,
 }
 
 
@@ -91,7 +121,6 @@ def _load_ckd_arff(path: str):
     return np.array(rows_X), np.array(rows_y)
 
 
-
 def _load_heart_cleveland(path: str):
     """Parse the real UCI Cleveland heart dataset into (X, y) using HEART_FEATURES.
 
@@ -111,11 +140,17 @@ def _load_heart_cleveland(path: str):
             if not s:
                 continue
             cells = [c.strip() for c in s.split(",")]
-            if len(cells) < 14 or "?" in (cells[0], cells[1], cells[3], cells[4], cells[5]):
+            if len(cells) < 14 or "?" in (
+                cells[0],
+                cells[1],
+                cells[3],
+                cells[4],
+                cells[5],
+            ):
                 continue
             try:
                 age = float(cells[0])
-                sex = float(cells[1])            # 1 = male, 0 = female
+                sex = float(cells[1])  # 1 = male, 0 = female
                 systolic_bp = float(cells[3])
                 cholesterol = float(cells[4])
                 diabetic = 1.0 if float(cells[5]) == 1.0 else 0.0  # fbs > 120 mg/dl
@@ -165,7 +200,9 @@ def _load_pima_diabetes(path: str):
                 continue
             # Pedigree is a continuous risk score; treat >0.5 as a positive family history.
             family_history = 1.0 if pedigree > 0.5 else 0.0
-            rows_X.append([glucose, bmi, age, insulin, diastolic_bp, pregnancies, family_history])
+            rows_X.append(
+                [glucose, bmi, age, insulin, diastolic_bp, pregnancies, family_history]
+            )
             rows_y.append(y)
     if len(rows_X) < 20:
         return None
@@ -223,12 +260,16 @@ def _synth_diabetes(n: int = 4000, seed: int = 7):
     )
     prob = 1 / (1 + np.exp(-z))
     y = (rng.random(n) < prob).astype(int)
-    X = np.column_stack([glucose, bmi, age, insulin, diastolic_bp, pregnancies, family_history])
+    X = np.column_stack(
+        [glucose, bmi, age, insulin, diastolic_bp, pregnancies, family_history]
+    )
     return X, y
 
 
 def _train_one(name: str, X, y, features: list[str]) -> float:
-    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=1, stratify=y)
+    X_tr, X_te, y_tr, y_te = train_test_split(
+        X, y, test_size=0.2, random_state=1, stratify=y
+    )
     # Smaller real datasets (e.g. Cleveland heart, 303 rows) overfit with deep trees;
     # a shallower, lightly-regularised model generalises better. Larger synthetic/CKD
     # sets are unaffected by these conservative settings.
@@ -237,7 +278,12 @@ def _train_one(name: str, X, y, features: list[str]) -> float:
     )
     clf.fit(X_tr, y_tr)
     auc = roc_auc_score(y_te, clf.predict_proba(X_te)[:, 1])
-    bundle = {"model": clf, "features": features, "version": f"{name}-gb-v1", "auc": round(float(auc), 4)}
+    bundle = {
+        "model": clf,
+        "features": features,
+        "version": f"{name}-gb-v1",
+        "auc": round(float(auc), 4),
+    }
     path = os.path.join(MODELS_DIR, f"{name}.joblib")
     joblib.dump(bundle, path)
     logger.info("[train] %s: AUC=%.4f  saved -> %s", name, auc, path)
@@ -245,7 +291,10 @@ def _train_one(name: str, X, y, features: list[str]) -> float:
 
 
 def main():
-    logger.info("[train] datasets dir: %s (real CSVs override synthetic if present)", DATASETS_DIR)
+    logger.info(
+        "[train] datasets dir: %s (real CSVs override synthetic if present)",
+        DATASETS_DIR,
+    )
     # Heart — use real UCI Cleveland data if present, else synthetic.
     heart_path = os.path.join(DATASETS_DIR, "heart_cleveland.data")
     loaded_h = _load_heart_cleveland(heart_path) if os.path.exists(heart_path) else None
@@ -279,7 +328,9 @@ def main():
         else:
             logger.warning("[train] ckd: ARFF unusable, skipping")
     else:
-        logger.info("[train] ckd: no dataset found, skipping (place ckd.arff in datasets/)")
+        logger.info(
+            "[train] ckd: no dataset found, skipping (place ckd.arff in datasets/)"
+        )
     logger.info("[train] done.")
 
 

@@ -21,19 +21,27 @@ class HealthEvent(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     patient_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     # Link to source document (optional — some events are manually added)
     document_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("medical_documents.id", ondelete="SET NULL"), nullable=True
+        UUID(as_uuid=True),
+        ForeignKey("medical_documents.id", ondelete="SET NULL"),
+        nullable=True,
     )
     # Event details
     event_type: Mapped[str] = mapped_column(
-        String(50), nullable=False
+        String(50),
+        nullable=False,
         # doctor_visit | lab_test | diagnosis | medication_start | medication_stop
         # procedure | surgery | hospitalization | vaccination | checkup
     )
-    event_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    event_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     severity: Mapped[str] = mapped_column(

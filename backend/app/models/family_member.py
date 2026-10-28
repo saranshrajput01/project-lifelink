@@ -23,7 +23,10 @@ class FamilyMember(Base):
     )
     # The account that owns/manages this family profile
     owner_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     # mother | father | spouse | son | daughter | sibling | guardian | other

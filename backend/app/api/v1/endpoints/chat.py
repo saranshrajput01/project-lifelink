@@ -98,8 +98,9 @@ async def _build_context(user_id: str, db: AsyncSession) -> str:
         labs = ed.get("lab_results")
         if labs:
             abn = [
-                f"{l.get('test_name')}={l.get('value')}{l.get('unit','')}"
-                for l in labs if isinstance(l, dict) and l.get("is_abnormal")
+                f"{lab.get('test_name')}={lab.get('value')}{lab.get('unit','')}"
+                for lab in labs
+                if isinstance(lab, dict) and lab.get("is_abnormal")
             ]
             if abn:
                 line += f" | Abnormal labs: {'; '.join(abn)}"
@@ -133,7 +134,9 @@ async def chat(
 ):
     """Chat with the AI assistant, grounded in the user's own records."""
     # Prefer real RAG (vector retrieval of relevant chunks); fall back to summaries.
-    retrieved = await retrieve(db, patient_id=UUID(user_id), query=body.message, top_k=5)
+    retrieved = await retrieve(
+        db, patient_id=UUID(user_id), query=body.message, top_k=5
+    )
     if retrieved:
         context = (
             "Relevant excerpts from the user's medical records:\n"

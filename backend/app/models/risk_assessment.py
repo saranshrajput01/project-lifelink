@@ -21,14 +21,21 @@ class RiskAssessment(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     patient_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     # Risk details
     disease_type: Mapped[str] = mapped_column(
-        String(50), nullable=False, index=True
+        String(50),
+        nullable=False,
+        index=True,
         # cardiovascular | diabetes | chronic_kidney_disease | readmission
     )
-    risk_score: Mapped[float] = mapped_column(Float, nullable=False)  # 0.0 to 1.0 probability
+    risk_score: Mapped[float] = mapped_column(
+        Float, nullable=False
+    )  # 0.0 to 1.0 probability
     risk_level: Mapped[str] = mapped_column(
         String(20), nullable=False  # low | moderate | high | critical
     )

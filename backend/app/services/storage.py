@@ -46,7 +46,9 @@ def generate_s3_key(patient_id: str, filename: str) -> str:
     return f"patients/{patient_id}/{now.year}/{now.month:02d}/{unique_id}_{filename}"
 
 
-async def upload_file_to_s3(file_content: bytes, s3_key: str, content_type: str) -> bool:
+async def upload_file_to_s3(
+    file_content: bytes, s3_key: str, content_type: str
+) -> bool:
     """Upload file bytes to S3/MinIO. Returns True on success."""
     client = get_s3_client()
     try:

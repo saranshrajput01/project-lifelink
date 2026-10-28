@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 class FamilyMemberCreate(BaseModel):
     """Payload to create a family member profile."""
+
     full_name: str = Field(..., min_length=1, max_length=255)
     relationship: str = Field(default="other")
     date_of_birth: date | None = None
@@ -23,6 +24,7 @@ class FamilyMemberCreate(BaseModel):
 
 class FamilyMemberUpdate(BaseModel):
     """Partial update for a family member profile."""
+
     full_name: str | None = Field(default=None, min_length=1, max_length=255)
     relationship: str | None = None
     date_of_birth: date | None = None
@@ -36,6 +38,7 @@ class FamilyMemberUpdate(BaseModel):
 
 class FamilyMemberResponse(BaseModel):
     """Response model for a family member profile."""
+
     id: UUID
     owner_id: UUID
     full_name: str
@@ -54,5 +57,6 @@ class FamilyMemberResponse(BaseModel):
 
 class FamilyMemberListResponse(BaseModel):
     """List of family member profiles."""
+
     members: list[FamilyMemberResponse]
     total: int

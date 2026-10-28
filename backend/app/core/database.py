@@ -30,6 +30,7 @@ async_session_factory = async_sessionmaker(
 
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy models."""
+
     pass
 
 
@@ -37,7 +38,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     Dependency that provides a database session per request.
     Automatically closes the session when the request is done.
-    
+
     Usage in FastAPI:
         @router.get("/users")
         async def get_users(db: AsyncSession = Depends(get_db)):

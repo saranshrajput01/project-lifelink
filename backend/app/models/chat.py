@@ -21,14 +21,23 @@ class ChatSession(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     patient_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
-    title: Mapped[str | None] = mapped_column(String(500), nullable=True)  # Auto-generated from first message
-    context: Mapped[dict | None] = mapped_column(JSONB, nullable=True)  # Session context/memory
+    title: Mapped[str | None] = mapped_column(
+        String(500), nullable=True
+    )  # Auto-generated from first message
+    context: Mapped[dict | None] = mapped_column(
+        JSONB, nullable=True
+    )  # Session context/memory
     started_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
-    last_message_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_message_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class ChatMessage(Base):
@@ -40,7 +49,10 @@ class ChatMessage(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("chat_sessions.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("chat_sessions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     role: Mapped[str] = mapped_column(
         String(20), nullable=False  # user | assistant | system

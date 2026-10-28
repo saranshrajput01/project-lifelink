@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 class ReminderCreate(BaseModel):
     """Payload to create a reminder."""
+
     title: str = Field(..., min_length=1, max_length=255)
     reminder_type: str = Field(default="medication")
     notes: str | None = None
@@ -19,6 +20,7 @@ class ReminderCreate(BaseModel):
 
 class ReminderUpdate(BaseModel):
     """Partial update for a reminder."""
+
     title: str | None = Field(default=None, min_length=1, max_length=255)
     reminder_type: str | None = None
     notes: str | None = None
@@ -30,6 +32,7 @@ class ReminderUpdate(BaseModel):
 
 class ReminderResponse(BaseModel):
     """Response model for a reminder."""
+
     id: UUID
     patient_id: UUID
     reminder_type: str
@@ -46,5 +49,6 @@ class ReminderResponse(BaseModel):
 
 class ReminderListResponse(BaseModel):
     """List of reminders."""
+
     reminders: list[ReminderResponse]
     total: int

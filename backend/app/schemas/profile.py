@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 class ProfileUpdate(BaseModel):
     """Request body for creating/updating a user profile."""
+
     date_of_birth: date | None = None
     gender: str | None = Field(None, pattern="^(male|female|other)$")
     blood_group: str | None = Field(None, pattern="^(A|B|AB|O)[+-]$")
@@ -24,6 +25,7 @@ class ProfileUpdate(BaseModel):
 
 class ProfileResponse(BaseModel):
     """Response model for user profile."""
+
     id: UUID
     user_id: UUID
     date_of_birth: date | None = None
