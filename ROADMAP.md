@@ -110,7 +110,7 @@ not scale to many documents). See pending section below.
 |---------|-------------|--------|
 | AWS Deployment | ECS + RDS + S3 + CloudFront | 🟡 IaC written (`infra/`), apply pending (needs AWS creds) |
 | Terraform IaC | Full infrastructure as code | ✅ Done (VPC, ECS Fargate, ALB, RDS PG16, S3, ECR, Secrets Mgr) |
-| Supabase + Render deploy | Free-tier alt to AWS: Supabase PG+pgvector+Storage, Render backend | ✅ Config done (`render.yaml`, `docs/DEPLOY_SUPABASE_RENDER.md`); storage boto3 made Supabase-compatible; email SMTP verified live |
+| Supabase + Render deploy | Free-tier alt to AWS: Supabase PG+pgvector+Storage, Render backend | 🟡 In progress — Supabase project `lifelink` created (eu-west-1), pgvector enabled, **all 10 tables migrated live via alembic** (`env.py` now `%`-escapes percent-encoded passwords). Pending: Storage bucket+S3 creds, Render backend deploy, Vercel frontend |
 | Monitoring | CloudWatch, Sentry, health checks | ⬜ Planned |
 | Load Testing | k6/Locust performance benchmarks | ⬜ Planned |
 | HIPAA Compliance | Encryption at rest, audit logs, access controls | ⬜ Planned |

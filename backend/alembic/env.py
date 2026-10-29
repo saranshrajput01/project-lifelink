@@ -26,8 +26,10 @@ from app.models.reminder import Reminder  # noqa: F401
 settings = get_settings()
 config = context.config
 
-# Override DB URL from environment
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Override DB URL from environment.
+# Escape '%' as '%%' because ConfigParser treats '%' as interpolation syntax
+# (e.g. percent-encoded passwords like %40 in Supabase connection strings).
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
