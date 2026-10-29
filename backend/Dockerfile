@@ -48,5 +48,8 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Run with uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Run with uvicorn. Render (and most PaaS) inject a dynamic $PORT; fall back to
+# 8000 for local/docker-compose. No --reload in production (dev-only; wastes
+# memory and restarts workers on the free tier). Migrations are applied
+# separately (alembic upgrade head) against the managed DB.
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
