@@ -23,6 +23,9 @@ yarn-error.log*
 .env
 .env.*
 !.env.example
+# Frontend production API URL is a PUBLIC value (inlined into the browser
+# bundle anyway); commit it so Vercel builds always point at the live backend.
+!frontend/.env.production
 *.pem
 *.key
 
