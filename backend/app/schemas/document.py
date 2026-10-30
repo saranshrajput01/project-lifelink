@@ -20,6 +20,7 @@ class DocumentResponse(BaseModel):
     ocr_status: str
     processing_status: str
     summary_short: str | None = None
+    summary_detailed: str | None = None
     document_date: datetime | None = None
     doctor_name: str | None = None
     hospital_name: str | None = None
