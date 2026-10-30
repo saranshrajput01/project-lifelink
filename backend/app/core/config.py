@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
 
-    # ─── AWS S3 / MinIO ───────────────────────────────────
+    # ─── Object storage (S3 API): Supabase Storage / MinIO ─
     S3_ENDPOINT_URL: str = "http://localhost:9000"
     S3_ACCESS_KEY: str = "minioadmin"
     S3_SECRET_KEY: str = "minioadmin"

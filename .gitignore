@@ -70,14 +70,6 @@ data/
 # ─── Large wheel cache (never commit — 400MB+, rebuilt by Docker) ───
 backend/wheels/
 
-# ─── Terraform ──────────────────
-infra/.terraform/
-infra/.terraform.lock.hcl
-infra/terraform.tfstate
-infra/terraform.tfstate.*
-infra/terraform.tfvars
-infra/*.tfplan
-
 # ─── Archives ───────────────────
 *.rar
 *.zip

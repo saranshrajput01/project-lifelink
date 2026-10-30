@@ -1,6 +1,6 @@
 # Deploy LIFELINK — Supabase + Render (free tier)
 
-This is the simple, free deployment path (alternative to the AWS Terraform in `infra/`).
+This is how LIFELINK is deployed: Supabase (DB + storage), Render (backend), Vercel (frontend).
 
 ```
 Frontend  → Vercel / Netlify   (free)

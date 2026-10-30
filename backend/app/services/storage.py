@@ -1,5 +1,6 @@
 """
-S3 Storage service — handles file upload/download to MinIO/AWS S3.
+S3-compatible storage service — upload/download files to Supabase Storage
+(production) or MinIO (local Docker) through the S3 API via boto3.
 """
 
 import uuid
@@ -15,10 +16,10 @@ settings = get_settings()
 
 
 def get_s3_client():
-    """Create an S3 client (works with MinIO, AWS S3, and Supabase Storage).
+    """Create an S3-API client for Supabase Storage (prod) or MinIO (local).
 
-    Path-style addressing + signature v4 are required for MinIO and Supabase's
-    S3-compatible endpoint; AWS S3 accepts them too, so we always set them.
+    Path-style addressing + signature v4 are required by both endpoints.
+    (boto3's parameter names say "aws_*", but these are just the S3 keys.)
     """
     return boto3.client(
         "s3",

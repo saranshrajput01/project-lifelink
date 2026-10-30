@@ -226,7 +226,7 @@ export function LandingPage() {
           <FeatureCard
             icon="☁️"
             title="Cloud-Native"
-            description="Docker + AWS (ECS, RDS, S3). Auto-scaling, multi-AZ deployment. 99.9% uptime. GitHub Actions CI/CD."
+            description="Docker backend on Render, frontend on Vercel, PostgreSQL + pgvector and file storage on Supabase. Health checks and GitHub Actions CI/CD."
             stats="Production-ready infrastructure"
             delay={0.5}
           />
@@ -237,7 +237,7 @@ export function LandingPage() {
       <section className="relative z-10 py-20 px-8 border-t border-white/5">
         <p className="text-center text-gray-500 text-xs uppercase tracking-[0.3em] mb-8">Technology Stack</p>
         <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
-          {['Python', 'FastAPI', 'React', 'TypeScript', 'PostgreSQL', 'pgvector', 'XGBoost', 'LangChain', 'PaddleOCR', 'Docker', 'AWS', 'Redis', 'Celery', 'Scikit-learn'].map((tech, i) => (
+          {['Python', 'FastAPI', 'React', 'TypeScript', 'PostgreSQL', 'pgvector', 'XGBoost', 'LangChain', 'PaddleOCR', 'Docker', 'Vercel', 'Render', 'Supabase', 'Redis', 'Celery', 'Scikit-learn'].map((tech, i) => (
             <motion.span
               key={tech}
               initial={{ opacity: 0, scale: 0.8 }}

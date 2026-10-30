@@ -22,7 +22,7 @@ pydantic[email]
 redis==5.1.1
 celery==5.4.0
 
-# AWS S3
+# S3-API client for Supabase Storage / MinIO
 boto3==1.35.19
 
 # AI & ML (Phase 2+)

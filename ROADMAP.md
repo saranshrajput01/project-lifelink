@@ -139,9 +139,7 @@ not scale to many documents). See pending section below.
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| AWS Deployment | ECS + RDS + S3 + CloudFront | 🟡 IaC written (`infra/`), apply pending (needs AWS creds) |
-| Terraform IaC | Full infrastructure as code | ✅ Done (VPC, ECS Fargate, ALB, RDS PG16, S3, ECR, Secrets Mgr) |
-| Supabase + Render deploy | Free-tier alt to AWS: Supabase PG+pgvector+Storage, Render backend | ✅ **FULLY DEPLOYED (29 Oct 2026)** — Frontend `https://project-lifelink-1.vercel.app` (Vercel), Backend `https://lifelink-backend-tunc.onrender.com` (Render Docker free), DB+Storage on Supabase (PG17+pgvector, `lifelink-documents` bucket). Register/login/`me` + CORS E2E verified from Vercel origin. Note: Render free sleeps after 15min idle (cold start ~30-50s) |
+| Supabase + Render deploy | Supabase PG+pgvector+Storage, Render backend, Vercel frontend | ✅ **FULLY DEPLOYED (29 Oct 2026)** — Frontend `https://project-lifelink-1.vercel.app` (Vercel), Backend `https://lifelink-backend-tunc.onrender.com` (Render Docker free), DB+Storage on Supabase (PG17+pgvector, `lifelink-documents` bucket). Register/login/`me` + CORS E2E verified from Vercel origin. Note: Render free sleeps after 15min idle (cold start ~30-50s) |
 | Monitoring | CloudWatch, Sentry, health checks | ⬜ Planned |
 | Load Testing | k6/Locust performance benchmarks | ⬜ Planned |
 | HIPAA Compliance | Encryption at rest, audit logs, access controls | ⬜ Planned |
@@ -158,14 +156,14 @@ Phase 2.5 [████████████████████] 100% �
 Phase 3   [████████████████████] 100% — AI Intelligence
 Phase 4   [██████████████████░░]  90% — Predictive Analytics (heart + diabetes + CKD models, risk dashboard, explainability; MIMIC pending)
 Phase 5   [████████████████░░░░]  80% — Advanced Features (reminders+email+auto-scheduler, PDF, family; partial mobile)
-Phase 6   [█████████░░░░░░░░░░░]  45% — Production & Scale (LIVE on Vercel+Render+Supabase free tier; Terraform/pgAdmin done; monitoring/load-test/HIPAA pending)
+Phase 6   [█████████░░░░░░░░░░░]  45% — Production & Scale (LIVE on Vercel+Render+Supabase free tier; pgAdmin done; monitoring/load-test/HIPAA pending)
 ```
 
 ---
 
 ## 📝 Session Log — 29 Oct 2026 — ☁️ LIVE DEPLOY (Supabase + Render + Vercel, free tier)
 
-Shifted the whole app off local Docker onto free-tier cloud (AWS avoided — no cost).
+Shifted the whole app off local Docker onto free-tier cloud (free tier, no cost).
 
 | Item | Detail | Status |
 |------|--------|--------|
@@ -282,7 +280,7 @@ project-lifelink/
 | Storage | MinIO (dev) / S3 (prod) | S3-compatible, easy migration |
 | ML Framework | XGBoost + Scikit-learn | Fast, interpretable, proven in healthcare |
 | Container Registry | GitHub Container Registry | Free with GitHub, integrated with Actions |
-| Deployment Target | AWS ECS | Scalable, managed containers |
+| Deployment Target | Vercel + Render + Supabase | Free tier, managed, auto-deploy from GitHub |
 
 ---
 
@@ -291,7 +289,7 @@ project-lifelink/
 1. **PaddleOCR** → Complete OCR pipeline for image-based documents
 2. **RAG Chatbot** → LangChain + pgvector health assistant
 3. **Train ML models** → Start with heart disease prediction (UCI dataset)
-4. **AWS Deploy** → Get it live on the internet
+4. ~~Deploy~~ → ✅ Live on Vercel + Render + Supabase
 
 
 ---
@@ -349,17 +347,6 @@ for a few docs). True RAG needs an embedding model + pgvector storage + retrieva
   and switch the chat to vector similarity search over chunks.
 - Heads up: `sentence-transformers` is a large dependency (slower Docker build).
 
-### 5. ☁️ AWS Deployment (Phase 7)
-
-**Why not done:** Needs YOUR AWS account + credentials; deploying spends real money.
-
-**What to give Kiro next time (any ONE path):**
-- Path A (simplest): an AWS account with the **AWS CLI already configured** (`aws configure`
-  done, or env vars `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_DEFAULT_REGION`).
-  Then say "deploy to AWS ECS" — I'll write Terraform/ECS config and guide the apply.
-- Path B: just say "write the Terraform/infra code" — I can author all the IaC WITHOUT
-  deploying, so you can review and `terraform apply` yourself later.
-- Tell me target region + a rough budget (affects instance sizes).
 
 ### 6. 🔔 Notifications & Reminders (Phase 5)
 
@@ -390,7 +377,6 @@ for a few docs). True RAG needs an embedding model + pgvector storage + retrieva
 | OpenAI key | `backend/.env` → `OPENAI_API_KEY` | legacy, unused |
 | MinIO (S3) | `localhost:9000` / console `9001`, `minioadmin`/`minioadmin` | ✅ |
 | Postgres | `localhost:5432`, `lifelink`/`lifelink`/`lifelink_db` | ✅ |
-| AWS creds | — | ❌ NOT set (needed for Phase 7) |
 | SMTP / email | — | ❌ NOT set (needed for notifications) |
 | UCI datasets | — | ❌ NOT downloaded (needed for ML models) |
 
@@ -410,7 +396,7 @@ Switched Heart + Diabetes models from synthetic → **real public datasets** (fo
 All 3 risk models now train on **real data** (Heart UCI, Diabetes Pima, CKD UCI). Only MIMIC-IV remains (PhysioNet-gated).
 
 | GitHub push | Committed all new work (ML + RAG + reminders + family + infra + docs) and pushed to `main` (`github.com/saranshrajput01/project-lifelink`, public). `.gitignore` updated: keep `models_store/*.joblib` + datasets (`*.csv/*.data/*.arff`), exclude 433MB `backend/wheels/` | ✅ |
-| Security | Verified `.env` + Groq/AWS keys + Gmail app-pw **never** entered git history. ⚠️ Local `.env` Gmail app-password still live — revoke after demo | ✅ |
+| Security | Verified `.env` + Groq/storage keys + Gmail app-pw **never** entered git history. ⚠️ Local `.env` Gmail app-password still live — revoke after demo | ✅ |
 | Shutdown | `docker compose down` — all containers + network removed (data safe in volumes). Restart: `docker compose up -d` | ✅ |
 | CI fix | GitHub Actions was red (Frontend + Backend Lint). Added ESLint v9 flat config (`frontend/eslint.config.js` + typescript-eslint/react-hooks plugins, lenient warnings); `black` auto-format (37 files) + `ruff --fix` (unused imports, `l`→`line`/`lab`). Frontend lint 0 errors, build green (463 modules), backend ruff+black pass. Pushed `8baac32` | ✅ |
 
@@ -428,28 +414,27 @@ Reminder auto-notifications, docs, DB GUI, and project cleanup.
 | Test reports | `backend/scripts/make_test_reports.py` → 5 realistic PDFs (lab/prescription/discharge/kidney/thyroid) copied to `~/Desktop/LIFELINK_test_reports/` | ✅ |
 | Health score simplified | `_compute_insights` in documents.py: removed nested subquery, clear comments (100 − labs×8[≤40] − conditions×6[≤30], floor 30) | ✅ |
 | pgAdmin | Added to docker-compose (`:5050`) to view PostgreSQL in browser | ✅ |
-| Project cleanup | Removed empty `infrastructure/`, `ml-notebooks/`, CKD `.rar/.zip`, old `sample-reports/`, duplicate `LIFELINK_ROADMAP.md`, `.DS_Store`; moved `CleanPipe_Documentation.md` → docs/; gitignore += terraform/archives | ✅ |
+| Project cleanup | Removed empty `infrastructure/`, `ml-notebooks/`, CKD `.rar/.zip`, old `sample-reports/`, duplicate `LIFELINK_ROADMAP.md`, `.DS_Store`; moved `CleanPipe_Documentation.md` → docs/; gitignore += archives | ✅ |
 
 **Data storage (for reference):** PostgreSQL (`postgres_data` vol) = all structured data;
 MinIO (`minio_data` vol, console :9001) = uploaded files; Redis (`redis_data`) = cache.
-**Still pending (external):** AWS/Supabase actual deploy (creds), MIMIC-IV (PhysioNet),
+**Still pending (external):** Supabase/Render deploy (done 29 Oct), MIMIC-IV (PhysioNet),
 monitoring/load-test/HIPAA, full mobile pass.
 
 ---
 
 ## 📝 Session Log — 28 Oct 2026 (part 4)
 
-Completed CKD model (real UCI data), SMTP email, and AWS Terraform IaC.
+Completed CKD model (real UCI data) and SMTP email.
 
 | Item | Detail | Status |
 |------|--------|--------|
 | CKD model | Extracted UCI CKD `.arff` (bsdtar) → `datasets/ckd.arff`; `train.py` parses 399 real rows, 9 features; AUC ~1.0; `/predictions/ckd` endpoint + RiskPage CKD tab | ✅ E2E verified (99% critical) |
 | Email (SMTP) | `services/email.py` + config SMTP vars + `.env` (Gmail app pw); reminder-create sends confirmation (best-effort, graceful) | 🟡 wired; send fails as auth (need correct Gmail addr — guessed saranshrajput@gmail.com) |
-| AWS Terraform | `infra/` — VPC+subnets, ECS Fargate+ALB, RDS PG16, S3, ECR, Secrets Manager, IAM; README + tfvars.example; gitignore updated | ✅ written (apply pending AWS creds) |
 | Image commit | ckd model + email + predictions baked into image; fresh-recreate verified (3 models + email config) | ✅ |
 
 **⚠️ Security:** Gmail app password is in `backend/.env` and was shown on screen — **revoke it after the demo**.
-**Still pending (external):** email needs correct Gmail address; AWS apply (step 1 `aws configure` by user, then deploy); MIMIC-IV (PhysioNet); full mobile pass.
+**Still pending (external):** email needs correct Gmail address; MIMIC-IV (PhysioNet); full mobile pass.
 
 ---
 
@@ -466,7 +451,7 @@ Added **Phase 4 — Predictive Analytics** (heart + diabetes), demo-ready & veri
 | Image commit | models + code committed into `project-lifelink-backend:latest` | ✅ |
 
 **Still pending (need external inputs):** CKD model (UCI CKD CSV), MIMIC-IV readmission
-(PhysioNet creds), AWS deploy (AWS creds), email notifications (SMTP). xgboost optional
+(PhysioNet creds), email notifications (SMTP). xgboost optional
 (sklearn used instead to avoid a large download).
 
 ---
@@ -483,7 +468,7 @@ Added **Family Health Profiles** (Phase 5) full-stack + partial mobile-responsiv
 | Image commit | backend changes committed into `project-lifelink-backend:latest` (flaky network → commit instead of full rebuild) | ✅ |
 
 **Next (still blocked on inputs):** ML models (UCI CSVs), MIMIC-IV (PhysioNet creds),
-AWS deploy (AWS creds), email notifications (SMTP). Full mobile pass across all pages pending.
+email notifications (SMTP). Full mobile pass across all pages pending.
 
 ---
 
@@ -503,7 +488,7 @@ running Docker stack (not just syntax-checked):
 torch 2.14.1+cpu cuda=False, libGL present, transformers 4.57.6). Dockerfile me pip cache-mount
 (`--mount=type=cache`) bhi add kiya taaki future clean rebuilds me wheels dobara download na hon.
 Remaining pending tasks unchanged: ML models (UCI CSVs), MIMIC-IV (PhysioNet creds),
-AWS deploy (AWS creds), email (SMTP).
+email (SMTP).
 
 ---
 
@@ -527,7 +512,7 @@ frontend type-checked (tsc clean). Runtime verification pending next `docker com
    falls back to summary context when embeddings unavailable.
 
 **Next session (still blocked on inputs):** ML models (Heart/Diabetes/CKD — need UCI CSVs
-in `backend/app/ml/datasets/`), MIMIC-IV (PhysioNet creds), AWS deploy (AWS creds),
+in `backend/app/ml/datasets/`), MIMIC-IV (PhysioNet creds),
 email notifications (SMTP/SendGrid). After `docker compose build` run `alembic upgrade head`
 to apply the two new migrations.
 
@@ -578,4 +563,4 @@ stack:
 - Hardened Dockerfile pip install (timeout + retries); cleaned broken dummy documents
 - Verified end-to-end: upload → Groq extraction → insights → chat all working
 - **Next session:** pick any task from the "PENDING TASKS" section above and give me the
-  listed inputs. Recommended order: PaddleOCR → ML models (UCI) → real RAG → AWS deploy.
+  listed inputs. Recommended order: PaddleOCR → ML models (UCI) → real RAG.

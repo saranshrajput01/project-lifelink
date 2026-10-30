@@ -34,7 +34,7 @@ answers health questions via an AI chatbot grounded in the patient's own records
 | **PDF export** | reportlab | Generates downloadable health report PDFs |
 | **Email** | smtplib + Gmail SMTP | Reminder notifications |
 | **Containers** | Docker + Docker Compose | One command runs the whole stack identically everywhere |
-| **Deploy** | Terraform (AWS) / Render + Supabase | Infrastructure-as-code (AWS) OR simple free-tier hosting |
+| **Deploy** | Vercel + Render + Supabase | Free-tier managed hosting, auto-deploy from GitHub |
 | **CI/CD** | GitHub Actions | Auto lint/test/build on every push |
 
 ---
@@ -163,7 +163,6 @@ answers health questions via an AI chatbot grounded in the patient's own records
 | `backend/requirements.txt` | All Python dependencies (pinned versions) | Exact, repeatable installs |
 | `backend/alembic/` | DB migration scripts | Evolve the schema safely over time |
 | `render.yaml` | Render.com deploy blueprint | Free-tier cloud hosting for the backend |
-| `infra/*.tf` | Terraform AWS infra (VPC, ECS, ALB, RDS, S3, ECR, Secrets) | Production AWS deployment as code |
 | `docs/DEPLOY_SUPABASE_RENDER.md` | Step-by-step free deploy guide | Supabase (DB+storage) + Render (backend) |
 | `.github/workflows/ci.yml` + `deploy.yml` | GitHub Actions: lint, test, build, deploy | Automated quality checks & delivery |
 
@@ -217,7 +216,6 @@ These sit at the very top of the project (not inside backend/frontend).
 | `.kiro/steering/` | Kiro AI assistant config (`token-efficiency.md`) | Project-specific rules for the AI coding assistant used during development — not part of the app itself |
 | `backend/` | The FastAPI backend (API, database, AI, ML) | The server-side brain of the app |
 | `frontend/` | The React web app | What the user sees and clicks in the browser |
-| `infra/` | Terraform files for AWS deployment | Infrastructure-as-code — defines all cloud resources (servers, DB, storage) so they can be created automatically |
 | `docs/` | All project documentation (this file, deploy guide, etc.) | Keeps explanations/guides in one place |
 | `scripts/init-db.sql` | SQL that runs once when PostgreSQL first starts | **Enables `pgvector`** (for AI embeddings) and `uuid-ossp` (for unique IDs) in the database automatically |
 | `docker-compose.yml` | Defines & links all 5 services (postgres, redis, minio, backend, frontend) | One command (`docker compose up`) starts the entire app stack together |

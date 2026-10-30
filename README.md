@@ -76,9 +76,7 @@ npm run dev
 project-lifelink/
 ├── backend/          → FastAPI (Python) — REST API + AI services
 ├── frontend/         → React + TypeScript + Tailwind CSS
-├── ml-notebooks/     → Jupyter notebooks for ML research
 ├── scripts/          → Database & utility scripts
-├── infrastructure/   → Terraform (AWS deployment)
 ├── docs/             → Architecture & API documentation
 └── .github/          → CI/CD workflows
 ```
@@ -86,14 +84,16 @@ project-lifelink/
 **Tech Stack:**
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 18, TypeScript, Tailwind CSS, Vite |
-| Backend | Python 3.11, FastAPI, SQLAlchemy (async) |
-| Database | PostgreSQL 16 + pgvector |
-| Cache | Redis 7 |
-| Storage | AWS S3 (MinIO locally) |
-| AI/ML | LangChain, Gemini/OpenAI, XGBoost, Scikit-learn |
-| OCR | PaddleOCR, Tesseract |
-| DevOps | Docker, GitHub Actions, AWS |
+| Frontend | React 18, TypeScript, Tailwind CSS, Vite — hosted on **Vercel** |
+| Backend | Python 3.11, FastAPI, SQLAlchemy (async) — hosted on **Render** (Docker) |
+| Database | PostgreSQL + pgvector — **Supabase** |
+| Cache | Redis 7 (local Docker only) |
+| Storage | **Supabase Storage** (S3-compatible; MinIO locally) |
+| AI/ML | Groq (Qwen LLM), Scikit-learn |
+| OCR | PyMuPDF, PaddleOCR (local) |
+| DevOps | Docker, GitHub Actions, Vercel + Render auto-deploy |
+
+**Live:** Frontend https://project-lifelink-1.vercel.app · Backend https://lifelink-backend-tunc.onrender.com
 
 ---
 
