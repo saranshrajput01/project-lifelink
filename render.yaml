@@ -26,6 +26,12 @@ services:
         value: production
       - key: DEBUG
         value: "false"
+      # Free instance = 512MB RAM. torch/MiniLM + PaddleOCR OOM-kill the server
+      # on upload, so keep them off here (chat falls back to summary context).
+      - key: ENABLE_LOCAL_EMBEDDINGS
+        value: "false"
+      - key: ENABLE_LOCAL_OCR
+        value: "false"
       # ─── Supabase Postgres (Session/Transaction pooler connection string) ───
       # Format: postgresql+asyncpg://postgres.<ref>:<pwd>@<host>:5432/postgres
       - key: DATABASE_URL

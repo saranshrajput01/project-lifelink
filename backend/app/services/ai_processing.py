@@ -27,6 +27,8 @@ def _get_ocr_engine():
     global _ocr_engine
     if _ocr_engine is not None:
         return _ocr_engine
+    if not settings.ENABLE_LOCAL_OCR:  # disabled on low-memory hosts (Render free)
+        return None
     try:
         from paddleocr import PaddleOCR
 

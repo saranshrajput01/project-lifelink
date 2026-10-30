@@ -23,6 +23,8 @@ def _get_model():
     global _model
     if _model is not None:
         return _model
+    if not settings.ENABLE_LOCAL_EMBEDDINGS:  # disabled on low-memory hosts
+        return None
     try:
         from sentence_transformers import SentenceTransformer
 

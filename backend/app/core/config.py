@@ -68,6 +68,9 @@ class Settings(BaseSettings):
 
     LLM_MODEL: str = "qwen/qwen3.8-27b"  # Active model (Groq)
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
+    # torch + MiniLM need ~500MB RAM; set false on 512MB hosts (Render free).
+    # Chat then falls back to summary-context instead of vector RAG.
+    ENABLE_LOCAL_EMBEDDINGS: bool = True
 
     @property
     def groq_api_keys(self) -> list[str]:
@@ -85,6 +88,8 @@ class Settings(BaseSettings):
 
     # ─── OCR ───────────────────────────────────────────────
     OCR_ENGINE: str = "paddleocr"  # paddleocr | tesseract
+    # PaddleOCR is too heavy for 512MB hosts; text PDFs still work via PyMuPDF.
+    ENABLE_LOCAL_OCR: bool = True
 
     # ─── Email (SMTP) ─────────────────────────────────────
     SMTP_HOST: str = ""
