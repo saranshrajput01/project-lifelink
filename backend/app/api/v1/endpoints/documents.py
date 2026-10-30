@@ -7,6 +7,7 @@ from uuid import UUID
 
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     Depends,
     File,
     HTTPException,
@@ -18,7 +19,7 @@ from fastapi import (
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import async_session_factory, get_db
 from app.core.dependencies import get_current_user_id
 from app.models.document import MedicalDocument
 from app.models.profile import UserProfile
@@ -54,6 +55,7 @@ MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
     "/upload", response_model=UploadResponse, status_code=status.HTTP_201_CREATED
 )
 async def upload_document(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     doc_type: str = Query(
         default="other",
@@ -108,24 +110,36 @@ async def upload_document(
         processing_status="pending",
     )
     db.add(document)
-    await db.flush()
-    await db.refresh(document)
+    await db.commit()  # commit now so the background task can see the row
 
-    # Process inline (Phase 2 TODO: move to Celery background task)
-    await _run_ai_processing(document, content, document.mime_type)
-    await _index_for_rag(db, document)
+    # AI processing (OCR + Groq) takes a while — run it after the response is sent
+    # so the upload returns immediately. Status moves pending → completed/failed.
+    background_tasks.add_task(_process_in_background, document.id, content)
 
     return UploadResponse(
         id=document.id,
         filename=document.original_filename,
         doc_type=document.doc_type,
         status=document.processing_status,
-        message=(
-            "Document uploaded. AI processing complete."
-            if document.processing_status == "completed"
-            else "Document uploaded, but AI processing failed. You can retry from the dashboard."
-        ),
+        message="Document uploaded. AI processing has started — refresh in a minute.",
     )
+
+
+async def _process_in_background(document_id: UUID, content: bytes) -> None:
+    """Run AI processing + RAG indexing in its own DB session after the response."""
+    async with async_session_factory() as db:
+        try:
+            document = await db.get(MedicalDocument, document_id)
+            if document is None:
+                return
+            document.processing_status = "processing"
+            await db.commit()
+            await _run_ai_processing(document, content, document.mime_type)
+            await _index_for_rag(db, document)
+            await db.commit()
+        except Exception:
+            logger.exception("[DOC] background processing failed for %s", document_id)
+            await db.rollback()
 
 
 async def _run_ai_processing(
