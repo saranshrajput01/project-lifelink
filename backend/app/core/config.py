@@ -105,6 +105,8 @@ class Settings(BaseSettings):
         )
 
     # Brevo HTTPS email API (needed on Render free tier: SMTP ports are blocked)
+    RESEND_API_KEY: str = ""
+    RESEND_FROM: str = ""  # default onboarding@resend.dev (sends only to account owner)
     BREVO_API_KEY: str = ""
     BREVO_SENDER_EMAIL: str = ""  # must be a verified sender in Brevo
 

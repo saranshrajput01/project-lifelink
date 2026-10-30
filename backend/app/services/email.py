@@ -1,10 +1,11 @@
 """
 Email service.
 
-Two transports, tried in this order:
-1. Brevo HTTPS API (BREVO_API_KEY) — works on Render's free tier, which blocks
+Transports, tried in this order:
+1. Resend HTTPS API (RESEND_API_KEY) — works on Render's free tier, which blocks
    outbound SMTP ports 25/465/587.
-2. SMTP (e.g. Gmail app password) — works locally / on paid hosts.
+2. Brevo HTTPS API (BREVO_API_KEY) — same idea.
+3. SMTP (e.g. Gmail app password) — works locally / on paid hosts.
 
 Degrades gracefully: if nothing is configured, send_email() returns False
 instead of raising, so callers can treat email as best-effort.
@@ -24,6 +25,43 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 BREVO_URL = "https://api.brevo.com/v3/smtp/email"
+RESEND_URL = "https://api.resend.com/emails"
+
+
+def _send_resend(to: str, subject: str, body: str, html: str | None) -> bool:
+    payload = {
+        "from": settings.RESEND_FROM or "LIFELINK <onboarding@resend.dev>",
+        "to": [to],
+        "subject": subject,
+        "text": body,
+    }
+    if html:
+        payload["html"] = html
+    req = urllib.request.Request(
+        RESEND_URL,
+        data=json.dumps(payload).encode(),
+        headers={
+            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+            "Content-Type": "application/json",
+            "User-Agent": "lifelink/1.0",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            ok = 200 <= resp.status < 300
+        logger.info("[email] resend sent to %s: %s", to, subject)
+        return ok
+    except urllib.error.HTTPError as e:
+        logger.error(
+            "[email] resend failed for %s: %s %s",
+            to,
+            e.code,
+            e.read().decode(errors="replace")[:300],
+        )
+    except Exception as e:
+        logger.error("[email] resend failed for %s: %s", to, e)
+    return False
 
 
 def _send_brevo(to: str, subject: str, body: str, html: str | None) -> bool:
@@ -88,6 +126,8 @@ def _send_smtp(to: str, subject: str, body: str, html: str | None) -> bool:
 
 def send_email(to: str, subject: str, body: str, html: str | None = None) -> bool:
     """Send a plaintext (optionally HTML) email. Returns True on success."""
+    if settings.RESEND_API_KEY:
+        return _send_resend(to, subject, body, html)
     if settings.BREVO_API_KEY:
         return _send_brevo(to, subject, body, html)
     if settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASS:
