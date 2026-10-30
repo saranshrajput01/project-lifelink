@@ -59,8 +59,10 @@ async def _process_due_reminders() -> int:
             user = (
                 await db.execute(select(User).where(User.id == r.patient_id))
             ).scalar_one_or_none()
+            sent = True
             if user and getattr(user, "email", None):
-                send_email(
+                sent = await asyncio.to_thread(
+                    send_email,
                     to=user.email,
                     subject=f"⏰ LIFELINK Reminder: {r.title}",
                     body=(
@@ -71,6 +73,9 @@ async def _process_due_reminders() -> int:
                         "Stay healthy,\n— Project LIFELINK"
                     ),
                 )
+            if not sent:
+                # Don't mark as notified if the email failed — retry next tick.
+                continue
             # Roll recurring; otherwise just mark notified.
             nxt = _next_occurrence(r.due_at, r.recurrence)
             if nxt is not None:

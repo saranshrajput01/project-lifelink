@@ -6,7 +6,7 @@ No external provider needed; reminders are stored in the DB and surfaced in-app.
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,6 +28,7 @@ router = APIRouter(prefix="/reminders", tags=["Reminders"])
 @router.post("/", response_model=ReminderResponse, status_code=status.HTTP_201_CREATED)
 async def create_reminder(
     payload: ReminderCreate,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
@@ -49,7 +50,8 @@ async def create_reminder(
         await db.execute(select(User).where(User.id == UUID(user_id)))
     ).scalar_one_or_none()
     if user and getattr(user, "email", None):
-        send_email(
+        background_tasks.add_task(
+            send_email,
             to=user.email,
             subject=f"LIFELINK Reminder set: {reminder.title}",
             body=(

@@ -58,6 +58,11 @@ services:
       - key: GROQ_MODEL_STRONG
         value: qwen/qwen3.8-27b
       # ─── Email (optional) ───
+      # Render free tier blocks SMTP ports -> send reminder emails via Brevo HTTPS API
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false             # a sender verified in Brevo (e.g. your Gmail)
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT

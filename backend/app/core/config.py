@@ -100,7 +100,13 @@ class Settings(BaseSettings):
 
     @property
     def email_enabled(self) -> bool:
-        return bool(self.SMTP_HOST and self.SMTP_USER and self.SMTP_PASS)
+        return bool(
+            self.BREVO_API_KEY or (self.SMTP_HOST and self.SMTP_USER and self.SMTP_PASS)
+        )
+
+    # Brevo HTTPS email API (needed on Render free tier: SMTP ports are blocked)
+    BREVO_API_KEY: str = ""
+    BREVO_SENDER_EMAIL: str = ""  # must be a verified sender in Brevo
 
     # ─── Celery (Background Tasks) ────────────────────────
     CELERY_BROKER_URL: str = "redis://localhost:6379/1"
