@@ -76,8 +76,7 @@ def chat_with_rotation(messages: list[dict], model: str, **kwargs):
             else:
                 raise
 
-    raise RateLimitError(
-        f"All {total} Groq API keys are rate limited.",
-        response=None,
-        body=None,
-    )
+    # Plain exception: groq's RateLimitError needs a real httpx response
+    # (response=None crashed with "'NoneType' object has no attribute 'request'").
+    # Message contains "rate_limit" so callers fall back to the next model.
+    raise RuntimeError(f"rate_limit: all {total} Groq API keys are rate limited")
